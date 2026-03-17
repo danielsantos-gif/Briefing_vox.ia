@@ -207,15 +207,14 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
-    # Injetando estilo específico para a capa mais animada
+    # Injetando estilo da animação dinâmica e remoção de margens do Streamlit
     st.markdown("""
     <style>
-    /* Ocultar barra superior e remover padding excessivo do Streamlit */
     .stApp { background: transparent !important; }
     .block-container { padding-top: 1rem !important; }
     header { display: none !important; }
 
-    /* Novo fundo animado dinâmico (Orbs flutuantes) */
+    /* Fundo animado dinâmico (Orbs flutuantes) */
     .splash-bg {
         position: fixed; top: 0; left: 0; right: 0; bottom: 0;
         background: radial-gradient(circle at center, #1a0a00 0%, #050508 100%);
@@ -238,8 +237,21 @@ if not st.session_state.intro_viewed:
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
     </div>
+    """, unsafe_allow_html=True)
     
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 12vh;">
+    # Carregando as imagens em base64
+    img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
+    img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
+    
+    # --- LOGOS NO TOPO E TEXTOS CENTRALIZADOS ---
+    st.markdown(f"""
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 8vh;">
+        
+        <div style="display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 30px;">
+            <img src="data:image/png;base64,{img_nexus}" width="160">
+            <img src="data:image/png;base64,{img_voxia}" width="120">
+        </div>
+
         <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
         <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
         <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 30px auto; line-height: 1.6;">
@@ -248,32 +260,12 @@ if not st.session_state.intro_viewed:
     </div>
     """, unsafe_allow_html=True)
     
-    # --- BOTÃO CENTRALIZADO ---
+    # --- BOTÃO VAMOS COMEÇAR ---
     _, col_btn, _ = st.columns([3, 2, 3])
     with col_btn:
         if st.button("Vamos começar", type="primary", use_container_width=True):
             st.session_state.intro_viewed = True
             st.rerun()
-            
-    # --- LOGOS CENTRALIZADAS E MAIORES ---
-    st.markdown("<br><br>", unsafe_allow_html=True) # Espaçamento ajustado
-    col_esp1, col_logo1, col_logo2, col_esp2 = st.columns([2.5, 2, 2, 2.5])
-    
-    with col_logo1:
-        # Usando HTML para centralizar perfeitamente a imagem dentro da coluna
-        st.markdown(
-            '<div style="display:flex; justify-content:center; align-items:center;">'
-            '<img src="data:image/png;base64,{}" width="180">'
-            '</div>'.format(get_base64_image("logos nexus_negativa tagline (2).png")), 
-            unsafe_allow_html=True
-        )
-    with col_logo2:
-        st.markdown(
-            '<div style="display:flex; justify-content:center; align-items:center;">'
-            '<img src="data:image/png;base64,{}" width="140">'
-            '</div>'.format(get_base64_image("VOXIA - Logo negativo branco.png")), 
-            unsafe_allow_html=True
-        )
 
     st.stop()
 
