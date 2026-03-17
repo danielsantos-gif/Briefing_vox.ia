@@ -445,11 +445,11 @@ if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
         img_nexus_sidebar = get_base64_image("logos nexus_negativa tagline (2).png")
         img_voxia_sidebar = get_base64_image("VOXIA - Logo negativo branco.png")
         
-        # Logos lado a lado usando HTML (sem colunas do Streamlit) para tamanho e alinhamento perfeitos
+        # Logos lado a lado e centralizadas (justify-content: center)
         st.markdown(f"""
-<div style="display: flex; align-items: center; gap: 20px; margin-bottom: 10px; margin-top: 10px;">
-    <img src="data:image/png;base64,{img_nexus_sidebar}" width="110">
-    <img src="data:image/png;base64,{img_voxia_sidebar}" width="80">
+<div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 15px; margin-top: 10px;">
+<img src="data:image/png;base64,{img_nexus_sidebar}" width="110">
+<img src="data:image/png;base64,{img_voxia_sidebar}" width="80">
 </div>
 """, unsafe_allow_html=True)
             
