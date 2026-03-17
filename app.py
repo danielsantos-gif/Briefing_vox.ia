@@ -447,7 +447,7 @@ if st.session_state.tipo_usuario == "admin":
         else:
             st.info("Nenhum briefing recebido ainda.")
             
-   with tab_m:
+            with tab_m:
         st.subheader("Inspeção Profunda e Download")
         if res_adm.data:
             opcoes_dropdown = [""] + [f"{row['nome_sujeito']} (Prot: {row['protocolo']})" for _, row in df_admin.iterrows()]
