@@ -34,10 +34,22 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONTROLE DE NAVEGAÇÃO ---
+# --- CONTROLE DE NAVEGAÇÃO E ESTADO SEGURO ---
 if 'step' not in st.session_state: st.session_state.step = 1
 if 'acesso_liberado' not in st.session_state: st.session_state.acesso_liberado = False
 if 'tipo_usuario' not in st.session_state: st.session_state.tipo_usuario = None
+
+# [CORREÇÃO APLICADA AQUI]: Inicialização de todas as variáveis para impedir o AttributeError
+if 'empresa' not in st.session_state: st.session_state.empresa = ""
+if 'tipo_analise' not in st.session_state: st.session_state.tipo_analise = "Uma Marca / Empresa"
+if 'site_url' not in st.session_state: st.session_state.site_url = ""
+if 'desc' not in st.session_state: st.session_state.desc = ""
+if 'objetivos' not in st.session_state: st.session_state.objetivos = []
+if 'lista_b' not in st.session_state: st.session_state.lista_b = []
+if 'lista_u' not in st.session_state: st.session_state.lista_u = []
+if 'lista_conc' not in st.session_state: st.session_state.lista_conc = [{"nome": "", "site": ""}] * 5
+if 'lista_pos' not in st.session_state: st.session_state.lista_pos = [""] * 5
+if 'lista_neg' not in st.session_state: st.session_state.lista_neg = [""] * 5
 
 def next_step(): st.session_state.step += 1
 def prev_step(): st.session_state.step -= 1
@@ -190,8 +202,6 @@ elif st.session_state.step == 3:
     st.markdown("Nesta etapa, definimos o foco do diagnóstico. Precisamos entender o que você deseja priorizar e contra quem o mercado te compara no ambiente digital.")
     st.caption("(Selecione no mínimo 1 objetivo)")
     
-    if "objetivos" not in st.session_state: st.session_state.objetivos = []
-    
     obj1 = st.checkbox("Entender percepção atual: Mapeia como as IAs descrevem a marca hoje.", value="Percepção Atual" in st.session_state.objetivos)
     obj2 = st.checkbox("Identificar liderança: Analisa recomendações da IA face à concorrência (Share of Voice).", value="Liderança" in st.session_state.objetivos)
     obj3 = st.checkbox("Mitigar menções negativas: Identifica 'alucinações' ou associações a crises passadas.", value="Mitigar Crises" in st.session_state.objetivos)
@@ -217,10 +227,6 @@ elif st.session_state.step == 4:
     st.markdown("Para uma análise precisa de share of voice, precisamos identificar exatamente quem são seus rivais. Liste de 5 a 10 players ou temas.")
     
     tipo = st.session_state.get("tipo_analise", "Uma Marca / Empresa")
-    
-    if 'lista_conc' not in st.session_state:
-        st.session_state.lista_conc = [{"nome": "", "site": ""}] * 5
-
     tem_erro_url = False
 
     with st.container(border=True):
@@ -239,7 +245,6 @@ elif st.session_state.step == 4:
                 site_val = c2.text_input(f"Site {i}", value=item["site"], key=f"cs_{i}", label_visibility="collapsed", placeholder="https://site.com.br")
                 item["site"] = site_val
                 
-                # Validação estrita de URL 
                 if site_val.strip() and "." not in site_val:
                     c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
                     tem_erro_url = True
@@ -253,7 +258,6 @@ elif st.session_state.step == 4:
                 st.session_state.lista_conc.append({"nome": "", "site": ""})
                 st.rerun()
 
-    # Validações de duplicatas e limites
     nomes_inseridos = [x["nome"].strip().lower() for x in st.session_state.lista_conc if x["nome"].strip()]
     sites_inseridos = [x["site"].strip().lower() for x in st.session_state.lista_conc if x["site"].strip()]
     
@@ -287,8 +291,6 @@ elif st.session_state.step == 5:
     with col_p:
         st.subheader("✅ Atributos Positivos")
         st.caption("Liste as variáveis, valores ou adjetivos que você deseja que as IAs associem à sua marca.")
-        if "lista_pos" not in st.session_state: st.session_state.lista_pos = [""] * 5
-        
         for i, val in enumerate(st.session_state.lista_pos):
             c1, c2 = st.columns([8, 2])
             st.session_state.lista_pos[i] = c1.text_input(f"Pos {i}", value=val, key=f"pos_{i}", label_visibility="collapsed")
@@ -304,8 +306,6 @@ elif st.session_state.step == 5:
     with col_n:
         st.subheader("❌ Atributos Negativos")
         st.caption("Liste as variáveis ou termos que você deseja que as IAs NÃO associem à sua marca.")
-        if "lista_neg" not in st.session_state: st.session_state.lista_neg = [""] * 5
-        
         for i, val in enumerate(st.session_state.lista_neg):
             c1, c2 = st.columns([8, 2])
             st.session_state.lista_neg[i] = c1.text_input(f"Neg {i}", value=val, key=f"neg_{i}", label_visibility="collapsed")
@@ -358,8 +358,6 @@ elif st.session_state.step == 6:
     st.markdown(f"Esta é a fase mais sensível do diagnóstico. Cada pergunta será testada nos modelos de IA para auditar sua reputação.")
     st.info(f"**Importante:** Você deve obrigatoriamente incluir **'{marca_parametro}'** em cada pergunta. Não envie perguntas genéricas; use dúvidas reais que seus clientes possuem.")
     
-    if 'lista_b' not in st.session_state: st.session_state.lista_b = []
-    
     with st.container(border=True):
         new_b = st.text_input("Nova pergunta (Aperte Enter para adicionar):", key="in_b", placeholder=f"Ex: A {marca_parametro} é recomendada para projetos...?")
         
@@ -398,8 +396,6 @@ elif st.session_state.step == 7:
     st.markdown("Aqui medimos a sua autoridade orgânica no nicho. O objetivo é descobrir se as IAs recomendam a sua marca espontaneamente quando um usuário busca por uma solução técnica ou líder de setor.")
     st.warning(f"**Atenção:** Nestas perguntas, você **NÃO** deve citar '{marca_parametro}'. Foque em termos genéricos de mercado e dores que o seu produto resolve.")
     
-    if 'lista_u' not in st.session_state: st.session_state.lista_u = []
-    
     with st.container(border=True):
         new_u = st.text_input("Nova pergunta de mercado (Aperte Enter):", key="in_u", placeholder="Ex: Qual a melhor empresa de [Setor] no Brasil?")
         
@@ -435,8 +431,9 @@ elif st.session_state.step == 8:
     st.title("8. Revisão e Envio")
     st.markdown("Estamos quase lá! Antes de enviar, certifique-se de que os dados fornecidos refletem a estratégia atual. Uma vez enviado e aprovado, nossa equipe iniciará o processamento dos diagnósticos.")
     
-    st.write(f"**Sujeito da Análise:** {st.session_state.empresa}")
-    st.write(f"**Prompts Registrados:** {len(st.session_state.lista_b)} Branded / {len(st.session_state.lista_u)} Mercado")
+    # Uso seguro do `.get` como camada dupla de segurança para a exibição de dados
+    st.write(f"**Sujeito da Análise:** {st.session_state.get('empresa', 'Não informado')}")
+    st.write(f"**Prompts Registrados:** {len(st.session_state.get('lista_b', []))} Branded / {len(st.session_state.get('lista_u', []))} Mercado")
     
     st.divider()
     st.markdown("### Contato e Considerações Finais")
@@ -452,17 +449,16 @@ elif st.session_state.step == 8:
     
     with col_a:
         if st.button("🚀 FINALIZAR BRIEFING", type="primary", disabled=not pode_enviar):
-            # Formata a descrição para não quebrar o banco caso as colunas não existam
             descricao_completa = f"E-mail Contato: {email_contato}\nObjetivos: {', '.join(st.session_state.get('objetivos', []))}\n\nNarrativa Central: {st.session_state.get('desc', '')}\n\nNuances/Adicional: {nuances}"
             
             prot = f"BX-{random.randint(1000, 9999)}"
             supabase.table("briefings").insert({
                 "protocolo": prot,
-                "nome_sujeito": st.session_state.get("empresa"),
-                "tipo_analise": st.session_state.get("tipo_analise"),
-                "concorrentes": st.session_state.lista_conc,
-                "prompts_branded": [{"Pergunta": p} for p in st.session_state.lista_b],
-                "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.lista_u],
+                "nome_sujeito": st.session_state.get("empresa", ""),
+                "tipo_analise": st.session_state.get("tipo_analise", ""),
+                "concorrentes": st.session_state.get("lista_conc", []),
+                "prompts_branded": [{"Pergunta": p} for p in st.session_state.get("lista_b", [])],
+                "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.get("lista_u", [])],
                 "descricao": descricao_completa,
                 "status": "Novo"
             }).execute()
@@ -470,4 +466,3 @@ elif st.session_state.step == 8:
             st.balloons()
         if not pode_enviar:
             st.caption("Preencha um e-mail válido e aceite os termos da LGPD para finalizar.")
-
