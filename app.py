@@ -243,13 +243,15 @@ animation: moveOrbs 15s infinite alternate ease-in-out;
     img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
     img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
     
-    # --- LOGOS NO TOPO E TEXTOS CENTRALIZADOS ---
+    # --- LOGOS EMPILHADAS E TEXTOS CENTRALIZADOS ---
     st.markdown(f"""
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 6vh;">
-<div style="display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
-<img src="data:image/png;base64,{img_nexus}" width="160">
-<img src="data:image/png;base64,{img_voxia}" width="120">
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 4vh;">
+
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px;">
+<img src="data:image/png;base64,{img_voxia}" width="150">
+<img src="data:image/png;base64,{img_nexus}" width="130">
 </div>
+
 <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
 <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
 <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 30px auto; line-height: 1.6;">
