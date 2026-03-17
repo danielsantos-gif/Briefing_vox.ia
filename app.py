@@ -83,10 +83,15 @@ if "errata" in st.query_params:
     st.stop()
 
 # ==========================================
-# LOGIN
+# LOGIN E APRESENTAÇÃO
 # ==========================================
 if not st.session_state.acesso_liberado:
-    st.title("🔒 Portal de Acesso Vox.ia")
+    st.markdown("<h1 style='color: #F58220; margin-bottom: -15px;'>Briefing para vox.ia:</h1>", unsafe_allow_html=True)
+    st.title("Reputação e Presença de Marca na Inteligência Artificial.")
+    st.markdown("Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.")
+    
+    st.divider()
+    
     t1, t2 = st.tabs(["Acesso Cliente", "Acesso Equipe (Admin)"])
     
     with t1:
@@ -169,8 +174,10 @@ elif st.session_state.step == 2:
     st.title("2. Pilares de Autoridade (Porta-vozes e Narrativas)")
     st.markdown("A reputação em IA é construída por quem fala e pelo que é dito. Vamos detalhar as teses por trás da marca.")
     
-    st.text_area("Narrativa Central ou 'Tese' da Marca:", key="desc", height=150,
-                 placeholder="Qual é a principal mensagem que você quer que a IA entregue ao falar de você? (Ex: 'Somos a empresa que humaniza a tecnologia'). Descreva a narrativa para que possamos medir o alinhamento das respostas.")
+    st.markdown("### Narrativa Central ou 'Tese' da Marca:")
+    st.info("Qual é a principal mensagem que você quer que a IA entregue ao falar de você? (Ex: 'Somos a empresa que humaniza a tecnologia'). Descreva a narrativa para que possamos medir o alinhamento das respostas.")
+    
+    st.text_area("Descreva detalhadamente:", key="desc", height=150, label_visibility="collapsed", placeholder="Digite sua narrativa detalhada aqui...")
     
     col_v, col_a = st.columns([1, 5])
     col_v.button("Voltar", on_click=prev_step)
@@ -232,7 +239,7 @@ elif st.session_state.step == 4:
                 site_val = c2.text_input(f"Site {i}", value=item["site"], key=f"cs_{i}", label_visibility="collapsed", placeholder="https://site.com.br")
                 item["site"] = site_val
                 
-                # Validação super estrita de URL (Trava a página)
+                # Validação estrita de URL 
                 if site_val.strip() and "." not in site_val:
                     c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
                     tem_erro_url = True
@@ -246,14 +253,25 @@ elif st.session_state.step == 4:
                 st.session_state.lista_conc.append({"nome": "", "site": ""})
                 st.rerun()
 
+    # Validações de duplicatas e limites
+    nomes_inseridos = [x["nome"].strip().lower() for x in st.session_state.lista_conc if x["nome"].strip()]
+    sites_inseridos = [x["site"].strip().lower() for x in st.session_state.lista_conc if x["site"].strip()]
+    
+    tem_nome_duplicado = len(nomes_inseridos) != len(set(nomes_inseridos))
+    tem_site_duplicado = len(sites_inseridos) != len(set(sites_inseridos))
+
     validos = [x for x in st.session_state.lista_conc if x["nome"].strip() and (x["site"].strip() or tipo == "Uma Narrativa / Tema de Mercado")]
-    btn_ready = len(validos) >= 5 and not tem_erro_url
+    btn_ready = len(validos) >= 5 and not tem_erro_url and not tem_nome_duplicado and not tem_site_duplicado
     
     col_v, col_a = st.columns([1, 5])
     col_v.button("Voltar", on_click=prev_step)
     
     if st.button("Avançar", on_click=next_step, type="primary", disabled=not btn_ready): pass
     
+    if tem_nome_duplicado:
+        st.error("⚠️ Você inseriu concorrentes com o mesmo nome. Por favor, remova as repetições.")
+    if tem_site_duplicado and tipo != "Uma Narrativa / Tema de Mercado":
+        st.error("⚠️ Você inseriu URLs repetidas. Por favor, remova os sites duplicados.")
     if tem_erro_url:
         st.error("⚠️ Corrija os links inválidos marcados em vermelho para poder avançar.")
     elif len(validos) < 5:
@@ -306,17 +324,31 @@ elif st.session_state.step == 5:
     
     p_validos = len([x for x in st.session_state.lista_pos if x.strip()])
     n_validos = len([x for x in st.session_state.lista_neg if x.strip()])
-    ready = p_validos >= 5 and n_validos >= 5 and st.session_state.get("justificativa", "").strip() != ""
+    
+    pos_unicos = [x.strip().lower() for x in st.session_state.lista_pos if x.strip()]
+    neg_unicos = [x.strip().lower() for x in st.session_state.lista_neg if x.strip()]
+    
+    tem_pos_duplicado = len(pos_unicos) != len(set(pos_unicos))
+    tem_neg_duplicado = len(neg_unicos) != len(set(neg_unicos))
+    
+    ready = p_validos >= 5 and n_validos >= 5 and st.session_state.get("justificativa", "").strip() != "" and not tem_pos_duplicado and not tem_neg_duplicado
     
     col_v, col_a = st.columns([1, 5])
     col_v.button("Voltar", on_click=prev_step)
     if st.button("Avançar", on_click=next_step, type="primary", disabled=not ready): pass
-    if not ready:
+    
+    if tem_pos_duplicado:
+        st.error("⚠️ Existem atributos positivos repetidos. Por favor, remova as duplicatas.")
+    if tem_neg_duplicado:
+        st.error("⚠️ Existem atributos negativos repetidos. Por favor, remova as duplicatas.")
+        
+    if not ready and not tem_pos_duplicado and not tem_neg_duplicado:
         msg_erro = []
         if p_validos < 5: msg_erro.append(f"{5 - p_validos} atributos positivos")
         if n_validos < 5: msg_erro.append(f"{5 - n_validos} atributos negativos")
         if not st.session_state.get("justificativa", "").strip(): msg_erro.append("a justificativa")
-        st.error(f"⚠️ Ação Barrada: Faltam {', '.join(msg_erro)}.")
+        if msg_erro:
+            st.error(f"⚠️ Ação Barrada: Faltam {', '.join(msg_erro)}.")
 
 # --- PASSO 6: INTELIGÊNCIA DE BUSCA (BRANDED) ---
 elif st.session_state.step == 6:
