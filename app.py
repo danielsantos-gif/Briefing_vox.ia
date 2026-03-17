@@ -25,6 +25,13 @@ st.markdown("""
     /* Fundo App */
     .stApp { background-color: #0a0a0f; }
     
+    /* Puxa o conteúdo mais para cima, retirando o espaço em branco */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+    header { visibility: hidden; }
+
     /* Contraste melhorado para caixas de texto (Grid 8px) */
     div[data-baseweb="input"] > div, div[data-baseweb="textarea"] > div {
         background-color: #121218 !important;
@@ -66,19 +73,30 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Fundo Animado Tech/Orgânico (Apenas Splash Screen) */
+    /* Fundo Animado Tech/Orgânico (Aurora Laranja) */
     .splash-bg {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(-45deg, #000000, #1a0a00, #2b1100, #0a0a0f);
-        background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
+        background-color: #050508;
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(245, 130, 32, 0.15), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(245, 130, 32, 0.1), transparent 25%);
+        animation: pulseAurora 8s alternate infinite ease-in-out;
         z-index: -1;
     }
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    @keyframes pulseAurora {
+        0% { background-position: 0% 0%; opacity: 0.8; }
+        100% { background-position: 100% 100%; opacity: 1; }
+    }
+    
+    /* Oculta scrollbar na Splash Screen e maximiza espaço */
+    .splash-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        text-align: center;
     }
     
     /* Sidebar Styling */
@@ -122,12 +140,6 @@ st.markdown("""
     @keyframes popIn {
         0% { transform: scale(0); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
-    }
-    
-    /* Remove padding na tela inicial para caber sem rolar */
-    .no-scroll-container .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 0 !important;
     }
     
     /* Animação Checkmark Final */
@@ -197,48 +209,37 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
-    # Injeta a classe que remove a rolagem e ativa o fundo
     st.markdown('<div class="splash-bg"></div>', unsafe_allow_html=True)
     st.markdown('<style>.stApp { background: transparent !important; }</style>', unsafe_allow_html=True)
     
     st.markdown("""
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 85vh; text-align: center;">
-        <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
-        <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-        <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 40px auto; line-height: 1.6;">
+    <div class="splash-container">
+        <h1 style="color: #F58220; font-size: 4rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
+        <h2 style="font-size: 2.5rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+        <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 16px auto 32px auto; line-height: 1.6;">
             Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
         </p>
     """, unsafe_allow_html=True)
     
+    # Botão Centralizado
     _, col_btn, _ = st.columns([3, 2, 3])
     with col_btn:
-        if st.button("Vamos começar", type="primary", use_container_width=True):
+        if st.button("Vamos começar →", type="primary", use_container_width=True):
             st.session_state.intro_viewed = True
             st.rerun()
             
-    # Logos Centralizadas à Esquerda (50% menores) logo abaixo do botão
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    col_l1, col_l2, _ = st.columns([1.5, 1.5, 9])
-    with col_l1:
-        try: st.image("logos nexus_negativa tagline (2).png", width=75)
+    # Logos Centralizadas, menores e mais próximas ao botão
+    st.markdown("<br>", unsafe_allow_html=True)
+    _, c_l1, c_l2, _ = st.columns([4.2, 0.8, 0.8, 4.2])
+    with c_l1:
+        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
         except: pass
-    with col_l2:
-        try: st.image("VOXIA - Logo negativo branco.png", width=60)
+    with c_l2:
+        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
         except: pass
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
-
-# --- CABEÇALHO PADRÃO ALINHADO À DIREITA ---
-if st.session_state.intro_viewed:
-    c_espaco, c_logo1, c_logo2 = st.columns([8, 1, 1])
-    with c_logo1:
-        try: st.image("logos nexus_negativa tagline (2).png", width=75)
-        except: st.caption("Nexus")
-    with c_logo2:
-        try: st.image("VOXIA - Logo negativo branco.png", width=60)
-        except: st.caption("Vox.ia")
-    st.divider()
 
 # ==========================================
 # 1. LOGIN PROFISSIONAL (PADRÃO WEB)
@@ -259,7 +260,7 @@ if not st.session_state.acesso_liberado:
                 st.markdown("<br>", unsafe_allow_html=True)
                 senha_cli = st.text_input("Senha do Projeto", type="password", key="s_cli", placeholder="Insira a senha fornecida...")
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Entrar no Briefing", type="primary"):
+                if st.button("Entrar no Briefing →", type="primary"):
                     if senha_cli == "nexus123#":
                         st.session_state.acesso_liberado = True
                         st.session_state.tipo_usuario = "cliente"
@@ -271,7 +272,7 @@ if not st.session_state.acesso_liberado:
                 user_admin = st.text_input("E-mail corporativo", key="adm_mail", placeholder="nome@nexus.com")
                 otp_adm = st.text_input("Código de 6 dígitos", type="password")
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("Acessar Painel Admin", type="primary"):
+                if st.button("Acessar Painel Admin →", type="primary"):
                     if otp_adm == "123456":
                         st.session_state.acesso_liberado = True
                         st.session_state.tipo_usuario = "admin"
@@ -280,20 +281,69 @@ if not st.session_state.acesso_liberado:
     st.stop()
 
 # ==========================================
-# PAINEL ADMIN (DASHBOARD)
+# PAINEL ADMIN (DASHBOARD APRIMORADO)
 # ==========================================
 if st.session_state.tipo_usuario == "admin":
     st.title("Dashboard Estratégico")
-    tab_g, tab_m = st.tabs(["Gestão de Dados", "Análise Macro"])
+    tab_g, tab_m = st.tabs(["Gestão e Detalhes", "Análise Macro"])
     
     with tab_g:
-        res_adm = supabase.table("briefings").select("protocolo, data_envio, nome_sujeito, status").order("id", desc=True).execute()
+        res_adm = supabase.table("briefings").select("*").order("id", desc=True).execute()
         if res_adm.data:
-            st.dataframe(pd.DataFrame(res_adm.data), use_container_width=True)
+            df_admin = pd.DataFrame(res_adm.data)
+            st.dataframe(df_admin[['protocolo', 'data_envio', 'nome_sujeito', 'status']], use_container_width=True)
+            
+            st.divider()
+            st.markdown("### Inspeção Profunda e Download")
+            protocolos = df_admin['protocolo'].tolist()
+            prot_selecionado = st.selectbox("Selecione um protocolo para ver detalhes e exportar:", [""] + protocolos)
+            
+            if prot_selecionado:
+                dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
+                
+                # Gráficos Dinâmicos
+                st.markdown(f"**Análise de Preenchimento: {dados_prot['nome_sujeito']}**")
+                c_graf1, c_graf2 = st.columns(2)
+                
+                len_b = len(dados_prot.get('prompts_branded', []))
+                len_u = len(dados_prot.get('prompts_unbranded', []))
+                c_graf1.bar_chart(pd.DataFrame({"Qtd": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
+                
+                # Formatando Texto para Download (.txt / compatível com Word)
+                texto_doc = f"""DIAGNÓSTICO VOX.IA - BRIEFING COMPLETO
+==================================================
+Protocolo: {dados_prot['protocolo']}
+Sujeito Analisado: {dados_prot['nome_sujeito']}
+Tipo: {dados_prot['tipo_analise']}
+Status: {dados_prot['status']}
+
+CONTEXTO E OBJETIVOS:
+--------------------------------------------------
+{dados_prot['descricao']}
+
+CENÁRIO COMPETITIVO:
+--------------------------------------------------
+"""
+                for c in dados_prot.get('concorrentes', []):
+                    texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
+                
+                texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
+                for p in dados_prot.get('prompts_branded', []):
+                    texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    
+                texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
+                for p in dados_prot.get('prompts_unbranded', []):
+                    texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    
+                st.download_button("Baixar Resumo do Briefing (.txt)", data=texto_doc, file_name=f"{dados_prot['protocolo']}_briefing.txt", mime="text/plain", type="primary")
+                
+            st.divider()
             st.text_input("Gerar Link de Errata para Protocolo:", key="gen_err")
             if st.session_state.gen_err:
                 st.code(f"https://{st.secrets.get('APP_URL', 'seu-site')}.app/?errata={st.session_state.gen_err}")
-    
+        else:
+            st.info("Nenhum briefing recebido ainda.")
+            
     with tab_m:
         st.subheader("Indicadores-Chave")
         c1, c2 = st.columns(2)
@@ -311,7 +361,16 @@ if st.session_state.tipo_usuario == "admin":
 # ==========================================
 if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
     with st.sidebar:
-        st.markdown("<h3 style='color: #F58220; margin-bottom: 24px; text-align: left !important;'>Progresso do Briefing</h3>", unsafe_allow_html=True)
+        # Logos juntas no topo da sidebar
+        c_logo_s1, c_logo_s2 = st.columns(2)
+        with c_logo_s1:
+            try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
+            except: pass
+        with c_logo_s2:
+            try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
+            except: pass
+            
+        st.markdown("<h3 style='color: #F58220; margin-top: 16px; margin-bottom: 24px; text-align: left !important;'>Diagnóstico vox.ia</h3>", unsafe_allow_html=True)
         
         etapas = [
             "Contexto da Análise",
@@ -365,7 +424,7 @@ if st.session_state.step == 1:
         pode_ir = pode_ir and bool(st.session_state.dados['site_url'].strip() and "." in st.session_state.dados['site_url'])
         
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_a: st.button("Avançar →", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True)
 
 # --- PASSO 2: PILARES DE AUTORIDADE ---
@@ -380,7 +439,7 @@ elif st.session_state.step == 2:
     
     st.divider()
     pode_ir = bool(st.session_state.dados['desc_pilar'].strip())
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: st.button("Avançar →", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True)
 
@@ -404,7 +463,7 @@ elif st.session_state.step == 3:
 
     st.divider()
     pode_ir = len(st.session_state.dados['objetivos']) > 0
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: 
         if st.button("Avançar →", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True): pass
@@ -456,7 +515,7 @@ elif st.session_state.step == 4:
     btn_ready = len(validos) >= 5 and not tem_erro_url and not tem_nome_duplicado and not tem_site_duplicado
     
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: 
         if st.button("Avançar →", on_click=next_step, type="primary", disabled=not btn_ready, use_container_width=True): pass
@@ -515,7 +574,7 @@ elif st.session_state.step == 5:
     ready = p_validos >= 5 and n_validos >= 5 and st.session_state.dados['justificativa'].strip() != "" and not tem_pos_duplicado and not tem_neg_duplicado
     
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: 
         if st.button("Avançar →", on_click=next_step, type="primary", disabled=not ready, use_container_width=True): pass
@@ -565,7 +624,7 @@ elif st.session_state.step == 6:
     pode_avancar = b_prontos >= 5
     
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: 
         if st.button("Avançar →", on_click=next_step, type="primary", disabled=not pode_avancar, use_container_width=True): pass
@@ -608,7 +667,7 @@ elif st.session_state.step == 7:
     pode_avancar = u_prontos >= 5
     
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     with col_a: 
         if st.button("Ir para Revisão →", on_click=next_step, type="primary", disabled=not pode_avancar, use_container_width=True): pass
@@ -635,11 +694,11 @@ elif st.session_state.step == 8:
     pode_enviar = st.session_state.get('lgpd', False) and "@" in st.session_state.dados['email']
     
     st.divider()
-    col_v, col_a = st.columns(2)
+    col_v, col_a, _ = st.columns([2, 2, 6])
     with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
     
     with col_a:
-        if st.button("FINALIZAR BRIEFING", type="primary", disabled=not pode_enviar, use_container_width=True):
+        if st.button("FINALIZAR BRIEFING →", type="primary", disabled=not pode_enviar, use_container_width=True):
             descricao_completa = f"E-mail Contato: {st.session_state.dados['email']}\nObjetivos: {', '.join(st.session_state.dados['objetivos'])}\n\nNarrativa Central: {st.session_state.dados['desc_pilar']}\n\nNuances/Adicional: {st.session_state.dados['nuances']}"
             
             prot = f"BX-{random.randint(1000, 9999)}"
@@ -658,7 +717,7 @@ elif st.session_state.step == 8:
             st.rerun()
             
         if not pode_enviar:
-            st.caption("Preencha um e-mail válido e aceite os termos da LGPD para finalizar.")
+            st.caption("Preencha um e-mail válido e aceite a LGPD para finalizar.")
 
 # --- PASSO 9: SUCESSO (CHECKMARK ANIMADO) ---
 elif st.session_state.step == 9:
