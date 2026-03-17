@@ -207,12 +207,20 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
-    # Injetando estilo da animação dinâmica e remoção de margens do Streamlit
+    # Injetando estilo da animação dinâmica e o BOTÃO MAIOR
     st.markdown("""
 <style>
 .stApp { background: transparent !important; }
 .block-container { padding-top: 1rem !important; }
 header { display: none !important; }
+
+/* Deixa o botão da capa maior e mais chamativo */
+.stButton > button {
+height: 64px !important;
+font-size: 20px !important;
+border-radius: 12px !important;
+font-weight: bold !important;
+}
 
 /* Fundo animado dinâmico (Orbs flutuantes) */
 .splash-bg {
@@ -243,9 +251,9 @@ animation: moveOrbs 15s infinite alternate ease-in-out;
     img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
     img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
     
-    # --- LOGOS LADO A LADO E TEXTOS CENTRALIZADOS ---
+    # --- LOGOS E TEXTOS EMPURRADOS PARA O CENTRO DA TELA (margin-top: 16vh) ---
     st.markdown(f"""
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 6vh;">
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 16vh;">
 
 <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
 <img src="data:image/png;base64,{img_nexus}" width="160">
@@ -254,15 +262,14 @@ animation: moveOrbs 15s infinite alternate ease-in-out;
 
 <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
 <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-<p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 30px auto; line-height: 1.6;">
+<p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 35px auto; line-height: 1.6;">
 Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
 </p>
 </div>
 """, unsafe_allow_html=True)
     
-    # --- BOTÃO VAMOS COMEÇAR ---
-    st.markdown("<br>", unsafe_allow_html=True)
-    _, col_btn, _ = st.columns([3, 2, 3])
+    # --- BOTÃO VAMOS COMEÇAR (Mais largo nas colunas) ---
+    _, col_btn, _ = st.columns([2.5, 3, 2.5])
     with col_btn:
         if st.button("Vamos começar", type="primary", use_container_width=True):
             st.session_state.intro_viewed = True
