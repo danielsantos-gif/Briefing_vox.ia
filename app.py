@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 import base64
+import datetime # Adicione este import no topo do seu arquivo, junto aos outros
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
@@ -330,7 +331,7 @@ if st.session_state.tipo_usuario == "admin":
             st.session_state.clear()
             st.rerun()
             
-    st.markdown("Gestão centralizada de briefings, status de clientes e exportação de dados.")
+    st.markdown("Gestão centralizada de briefings, status de clientes e agendamentos.")
     st.divider()
 
     tab_g, tab_m = st.tabs(["📊 Gestão de Status e Tabela", "🔎 Inspeção e Download"])
@@ -341,63 +342,96 @@ if st.session_state.tipo_usuario == "admin":
         if res_adm.data:
             df_admin = pd.DataFrame(res_adm.data)
             
-            if 'responsavel' not in df_admin.columns:
-                df_admin['responsavel'] = ""
+            # Se as colunas não existirem no banco antigo, cria no DataFrame temporário
+            if 'responsavel' not in df_admin.columns: df_admin['responsavel'] = ""
+            if 'data_apresentacao' not in df_admin.columns: df_admin['data_apresentacao'] = ""
                 
-            # Reorganizando a ordem das colunas para melhor leitura UX
-            df_edit = df_admin[['id', 'data_envio', 'protocolo', 'nome_sujeito', 'status', 'responsavel']].copy()
-            df_edit['data_envio'] = pd.to_datetime(df_edit['data_envio']).dt.strftime('%d/%m/%Y')
+            df_display = df_admin[['id', 'data_envio', 'protocolo', 'nome_sujeito', 'status', 'responsavel', 'data_apresentacao']].copy()
+            
+            # Formatação segura da data de envio
+            try:
+                df_display['data_envio'] = pd.to_datetime(df_display['data_envio']).dt.strftime('%d/%m/%Y')
+            except:
+                pass
             
             with st.container(border=True):
-                st.subheader("📋 Controle de Etapas e Responsáveis")
-                st.caption("Edite o status ou o responsável diretamente na tabela abaixo. As alterações ficarão destacadas até você salvar.")
+                st.subheader("📋 Visão Geral dos Briefings")
+                st.caption("Acompanhe o andamento de todos os protocolos gerados pelos clientes.")
                 
-                # Tabela com larguras ajustadas e layout clean
-                edited_df = st.data_editor(
-                    df_edit,
+                # Tabela de Apenas Leitura (st.dataframe em vez de data_editor)
+                st.dataframe(
+                    df_display,
                     column_config={
                         "id": None, # Oculta o ID interno
-                        "data_envio": st.column_config.TextColumn("Data", disabled=True, width="small"),
-                        "protocolo": st.column_config.TextColumn("Protocolo", disabled=True, width="small"),
-                        "nome_sujeito": st.column_config.TextColumn("Cliente / Sujeito", disabled=True, width="medium"),
-                        "status": st.column_config.SelectboxColumn(
-                            "Progresso atual",
-                            options=["Novo", "Briefing aprovado", "Cadastro na plataforma feito", "Em produção", "Produção finalizada", "Apresentação agendada", "Concluído", "Em ajuste"],
-                            required=True,
-                            width="medium"
-                        ),
-                        "responsavel": st.column_config.TextColumn("Responsável", help="Nome da pessoa", width="medium"),
+                        "data_envio": st.column_config.TextColumn("Data", width="small"),
+                        "protocolo": st.column_config.TextColumn("Protocolo", width="small"),
+                        "nome_sujeito": st.column_config.TextColumn("Cliente / Sujeito", width="medium"),
+                        "status": st.column_config.TextColumn("Progresso Atual", width="medium"),
+                        "responsavel": st.column_config.TextColumn("Responsável", width="small"),
+                        "data_apresentacao": st.column_config.TextColumn("Agendamento", width="small"),
                     },
                     use_container_width=True,
-                    hide_index=True,
-                    key="tabela_admin"
+                    hide_index=True
                 )
             
             st.markdown("<br>", unsafe_allow_html=True)
             
             # Blocos de Ações divididos lado a lado
-            col_acoes1, col_acoes2 = st.columns(2)
+            col_edit, col_errata = st.columns(2)
             
-            with col_acoes1:
+            # --- NOVO FLUXO DE EDIÇÃO INTUITIVO ---
+            with col_edit:
                 with st.container(border=True):
-                    st.markdown("**💾 Confirmar Atualizações**")
-                    st.caption("Grave as mudanças feitas na tabela no banco de dados.")
-                    if st.button("Salvar Alterações", type="primary", use_container_width=True):
-                        with st.spinner("Salvando no Supabase..."):
-                            for index, row in edited_df.iterrows():
-                                orig_row = df_edit.iloc[index]
-                                if row['status'] != orig_row['status'] or row['responsavel'] != orig_row['responsavel']:
-                                    try:
-                                        supabase.table("briefings").update({
-                                            "status": row['status'],
-                                            "responsavel": row['responsavel']
-                                        }).eq("id", row['id']).execute()
-                                    except Exception:
-                                        st.error("Erro ao salvar responsável. Verifique a tabela no banco.")
-                            st.success("Tabela atualizada com sucesso!")
-                            st.rerun()
+                    st.markdown("**✏️ Atualizar Status e Agendamento**")
+                    st.caption("Selecione um cliente para editar suas informações.")
+                    
+                    # Lista dropdown para selecionar o projeto
+                    opcoes_proj = [""] + list(df_admin['protocolo'].astype(str) + " - " + df_admin['nome_sujeito'].astype(str))
+                    proj_selecionado = st.selectbox("Selecione o Projeto:", opcoes_proj)
+                    
+                    if proj_selecionado:
+                        prot_selec = proj_selecionado.split(" - ")[0]
+                        dados_proj = df_admin[df_admin['protocolo'] == prot_selec].iloc[0]
+                        
+                        # Resgata dados atuais
+                        status_atual = dados_proj.get('status', 'Novo')
+                        resp_atual = dados_proj.get('responsavel', '')
+                        data_atual_str = dados_proj.get('data_apresentacao', '')
+                        
+                        lista_status = ["Novo", "Briefing aprovado", "Cadastro na plataforma feito", "Em produção", "Produção finalizada", "Apresentação agendada", "Concluído", "Em ajuste"]
+                        idx_status = lista_status.index(status_atual) if status_atual in lista_status else 0
+                        
+                        novo_status = st.selectbox("Atualizar Progresso:", lista_status, index=idx_status)
+                        
+                        # Trata a data atual para exibir no calendário do Streamlit
+                        data_obj = None
+                        if pd.notna(data_atual_str) and data_atual_str.strip() != "":
+                            try:
+                                data_obj = datetime.datetime.strptime(data_atual_str, "%d/%m/%Y").date()
+                            except:
+                                pass
+                                
+                        c1, c2 = st.columns(2)
+                        novo_resp = c1.text_input("Responsável:", value=resp_atual if pd.notna(resp_atual) else "")
+                        nova_data = c2.date_input("Agendamento:", value=data_obj, format="DD/MM/YYYY")
 
-            with col_acoes2:
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        if st.button("💾 Salvar Alterações", type="primary", use_container_width=True):
+                            nova_data_str = nova_data.strftime("%d/%m/%Y") if nova_data else ""
+                            
+                            with st.spinner("Salvando no Supabase..."):
+                                try:
+                                    supabase.table("briefings").update({
+                                        "status": novo_status,
+                                        "responsavel": novo_resp,
+                                        "data_apresentacao": nova_data_str
+                                    }).eq("protocolo", prot_selec).execute()
+                                    st.success("Briefing atualizado com sucesso!")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error("Erro ao salvar! Certifique-se de ter criado a coluna 'data_apresentacao' no Supabase.")
+
+            with col_errata:
                 with st.container(border=True):
                     st.markdown("**🔗 Gerar Link de Errata**")
                     st.caption("Insira o protocolo do cliente para gerar um link de correção.")
@@ -442,6 +476,7 @@ Protocolo: {dados_prot['protocolo']}
 Tipo: {dados_prot['tipo_analise']}
 Status: {dados_prot['status']}
 Responsável: {dados_prot.get('responsavel', 'Não atribuído')}
+Apresentação: {dados_prot.get('data_apresentacao', 'Não agendada')}
 
 CONTEXTO E OBJETIVOS:
 --------------------------------------------------
