@@ -19,11 +19,28 @@ def init_connection():
 
 supabase = init_connection()
 
-# --- ESTILIZAÇÃO CUSTOMIZADA (CSS) ---
+# --- ESTILIZAÇÃO CUSTOMIZADA (CSS E ANIMAÇÕES) ---
 st.markdown("""
     <style>
+    /* Fundo App */
     .stApp { background-color: #0a0a0f; }
-    .stButton>button { width: 100%; border-radius: 8px; }
+    
+    /* Botões */
+    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
+    
+    /* Contraste melhorado para todas as caixas de texto e input */
+    div[data-baseweb="input"] > div, div[data-baseweb="textarea"] > div {
+        background-color: #121218 !important;
+        border: 1px solid #3a3a4a !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="input"] > div:focus-within, div[data-baseweb="textarea"] > div:focus-within {
+        border: 1px solid #F58220 !important;
+        box-shadow: 0 0 5px rgba(245, 130, 32, 0.4) !important;
+    }
+
+    /* Cards de Perguntas (Passo 6 e 7) */
     .card-pergunta {
         background-color: #1a1a24;
         padding: 15px;
@@ -31,35 +48,74 @@ st.markdown("""
         border: 1px solid #2a2a3a;
         margin-bottom: 10px;
     }
+    
+    /* Splash Screen (Fundo Animado Tech/Orgânico) */
+    .splash-bg {
+        background: linear-gradient(135deg, #0a0a0f, #2b1100, #0a0a0f, #1a0a00);
+        background-size: 400% 400%;
+        animation: gradientMove 15s ease infinite;
+        padding: 80px 40px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid #331a00;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        margin-bottom: 30px;
+    }
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Animação Checkmark Final */
+    .success-checkmark {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+        display: block;
+    }
+    .checkmark_circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 4;
+        stroke-miterlimit: 10;
+        stroke: #4CAF50;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .checkmark_check {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke: #4CAF50;
+        fill: none;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+    }
+    @keyframes stroke { 100% { stroke-dashoffset: 0; } }
     </style>
     """, unsafe_allow_html=True)
 
-# --- CONTROLE DE NAVEGAÇÃO E COFRE DE MEMÓRIA (ESTADO SEGURO) ---
-# Isso impede que o Streamlit sofra de "amnésia" ao mudar de página
+# --- CONTROLE DE NAVEGAÇÃO E COFRE DE MEMÓRIA ---
+if 'intro_viewed' not in st.session_state: st.session_state.intro_viewed = False
+
 if 'dados' not in st.session_state:
     st.session_state.dados = {
-        'empresa': '',
-        'tipo_analise': 'Uma Marca / Empresa',
-        'site_url': '',
-        'desc_pilar': '',
-        'objetivos': [],
-        'justificativa': '',
-        'nuances': '',
-        'email': ''
+        'empresa': '', 'tipo_analise': 'Uma Marca / Empresa', 'site_url': '',
+        'desc_pilar': '', 'objetivos': [], 'justificativa': '', 'nuances': '', 'email': ''
     }
 
 if 'step' not in st.session_state: st.session_state.step = 1
 if 'acesso_liberado' not in st.session_state: st.session_state.acesso_liberado = False
 if 'tipo_usuario' not in st.session_state: st.session_state.tipo_usuario = None
 
-# Inicialização segura de listas
 if 'lista_b' not in st.session_state: st.session_state.lista_b = []
 if 'lista_u' not in st.session_state: st.session_state.lista_u = []
 if 'lista_conc' not in st.session_state: st.session_state.lista_conc = [{"nome": "", "site": ""} for _ in range(5)]
 if 'lista_pos' not in st.session_state: st.session_state.lista_pos = [""] * 5
 if 'lista_neg' not in st.session_state: st.session_state.lista_neg = [""] * 5
 
-# Gatilhos para limpar caixas de texto após inserção
 if 'limpar_b' not in st.session_state: st.session_state.limpar_b = False
 if 'limpar_u' not in st.session_state: st.session_state.limpar_u = False
 
@@ -107,34 +163,65 @@ if "errata" in st.query_params:
     st.stop()
 
 # ==========================================
-# LOGIN E APRESENTAÇÃO
+# 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
+# ==========================================
+if not st.session_state.intro_viewed:
+    st.markdown("""
+    <div class="splash-bg">
+        <h1 style="color: #F58220; font-size: 3.5rem; margin-bottom: 0;">Briefing para vox.ia:</h1>
+        <h2 style="font-size: 2.8rem; margin-top: 10px; color: #fff;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+        <p style="font-size: 1.2rem; color: #ccc; max-width: 800px; margin: 30px auto;">
+            Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
+        </p>
+    </div>
+    <br>
+    """, unsafe_allow_html=True)
+    
+    # Botão centralizado
+    _, col_btn, _ = st.columns([1, 1, 1])
+    with col_btn:
+        if st.button("🚀 Vamos começar", type="primary"):
+            st.session_state.intro_viewed = True
+            st.rerun()
+    st.stop()
+
+# ==========================================
+# LOGIN PROFISSIONAL (PADRÃO WEB)
 # ==========================================
 if not st.session_state.acesso_liberado:
-    st.markdown("<h1 style='color: #F58220; margin-bottom: -15px;'>Briefing para vox.ia:</h1>", unsafe_allow_html=True)
-    st.title("Reputação e Presença de Marca na Inteligência Artificial.")
-    st.markdown("Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.")
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 1.5, 1])
     
-    st.divider()
-    t1, t2 = st.tabs(["Acesso Cliente", "Acesso Equipe (Admin)"])
-    
-    with t1:
-        senha_cli = st.text_input("Senha do Projeto", type="password", key="s_cli")
-        if st.button("Entrar como Cliente"):
-            if senha_cli == "nexus123#":
-                st.session_state.acesso_liberado = True
-                st.session_state.tipo_usuario = "cliente"
-                st.rerun()
-            else: st.error("Senha inválida.")
+    with c2:
+        with st.container(border=True):
+            st.markdown("<h2 style='text-align: center; margin-bottom: 0;'>🔒 Portal de Acesso</h2>", unsafe_allow_html=True)
+            st.markdown("<p style='text-align: center; color: #888;'>Selecione seu perfil para continuar</p>", unsafe_allow_html=True)
+            st.divider()
             
-    with t2:
-        st.info("Acesso via código OTP (Simulação: 123456)")
-        user_admin = st.text_input("E-mail corporativo", key="adm_mail")
-        otp_adm = st.text_input("Código de 6 dígitos", type="password")
-        if st.button("Validar Admin"):
-            if otp_adm == "123456":
-                st.session_state.acesso_liberado = True
-                st.session_state.tipo_usuario = "admin"
-                st.rerun()
+            t1, t2 = st.tabs(["👤 Sou Cliente", "🛡️ Equipe Nexus"])
+            
+            with t1:
+                st.markdown("<br>", unsafe_allow_html=True)
+                senha_cli = st.text_input("Senha do Projeto", type="password", key="s_cli", placeholder="Insira a senha fornecida...")
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("Entrar no Briefing", type="primary"):
+                    if senha_cli == "nexus123#":
+                        st.session_state.acesso_liberado = True
+                        st.session_state.tipo_usuario = "cliente"
+                        st.rerun()
+                    else: st.error("Senha inválida.")
+                    
+            with t2:
+                st.info("Acesso via código OTP (Simulação: 123456)")
+                user_admin = st.text_input("E-mail corporativo", key="adm_mail", placeholder="nome@nexus.com")
+                otp_adm = st.text_input("Código de 6 dígitos", type="password")
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("Acessar Painel Admin", type="primary"):
+                    if otp_adm == "123456":
+                        st.session_state.acesso_liberado = True
+                        st.session_state.tipo_usuario = "admin"
+                        st.rerun()
+                    else: st.error("Código inválido.")
     st.stop()
 
 # ==========================================
@@ -165,9 +252,11 @@ if st.session_state.tipo_usuario == "admin":
     st.stop()
 
 # ==========================================
-# FLUXO DO CLIENTE (WIZARD - 8 PASSOS)
+# FLUXO DO CLIENTE (WIZARD)
 # ==========================================
-st.progress(st.session_state.step / 8)
+# A barra de progresso não deve quebrar na página 9
+barra_progresso = min(st.session_state.step, 8) / 8
+st.progress(barra_progresso)
 
 # --- PASSO 1: IDENTIFICAÇÃO ---
 if st.session_state.step == 1:
@@ -183,7 +272,6 @@ if st.session_state.step == 1:
     
     if st.session_state.dados['tipo_analise'] != "Uma Narrativa / Tema de Mercado":
         st.markdown("As IAs utilizam esse link para medir sua autoridade digital e taxa de citação direta.")
-        
         site_val = st.text_input("Site Oficial (Domínio Principal):", value=st.session_state.dados['site_url'], placeholder="https://www.suaempresa.com.br")
         st.session_state.dados['site_url'] = site_val
         
@@ -372,7 +460,6 @@ elif st.session_state.step == 6:
     st.markdown(f"Esta é a fase mais sensível do diagnóstico. Cada pergunta será testada nos modelos de IA para auditar sua reputação.")
     st.info(f"**Importante:** Você deve obrigatoriamente incluir **'{marca_parametro}'** em cada pergunta. Não envie perguntas genéricas; use dúvidas reais que seus clientes possuem.")
     
-    # Truque para limpar a caixa de texto sem bloquear a interface
     if st.session_state.limpar_b:
         st.session_state.input_b = ""
         st.session_state.limpar_b = False
@@ -388,7 +475,7 @@ elif st.session_state.step == 6:
                     st.error("⚠️ Ação Barrada: Esta pergunta já foi adicionada! Por favor, NÃO repita perguntas.")
                 else:
                     st.session_state.lista_b.insert(0, new_b.strip())
-                    st.session_state.limpar_b = True # Limpa o campo no próximo recarregamento
+                    st.session_state.limpar_b = True 
                     st.rerun()
             
     for i, p in enumerate(st.session_state.lista_b):
@@ -464,7 +551,10 @@ elif st.session_state.step == 8:
     st.divider()
     st.markdown("### Contato e Considerações Finais")
     st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados do produto:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
-    st.session_state.dados['nuances'] = st.text_area("Há algum detalhe, crise recente ou nuances que não foram abordados nas perguntas anteriores e que você considera vital para nossa análise?", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...")
+    
+    # Destacando o texto da Nuance (Em bold e subtítulo)
+    st.markdown("<br><h4><strong>Há algum detalhe, crise recente ou nuances que não foram abordados nas perguntas anteriores e que você considera vital para nossa análise?</strong></h4>", unsafe_allow_html=True)
+    st.session_state.dados['nuances'] = st.text_area("Detalhes adicionais:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=150)
     
     st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
     
@@ -488,8 +578,25 @@ elif st.session_state.step == 8:
                 "descricao": descricao_completa,
                 "status": "Novo"
             }).execute()
-            st.success(f"Briefing enviado com sucesso! Nosso time de especialistas entrará em contato. Protocolo: {prot}")
-            st.balloons()
+            
+            # Avança direto para a Tela 9 (Sucesso)
+            st.session_state.step = 9
+            st.rerun()
+            
         if not pode_enviar:
             st.caption("Preencha um e-mail válido e aceite os termos da LGPD para finalizar.")
+
+# --- PASSO 9: SUCESSO (CHECKMARK ANIMADO) ---
+elif st.session_state.step == 9:
+    st.markdown("""
+        <div style="display:flex; justify-content:center; align-items:center; height:50vh; flex-direction:column;">
+            <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark_circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark_check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <h1 style="margin-top: 30px; font-size: 3rem;">Briefing Concluído!</h1>
+            <p style="color: #ccc; font-size: 1.2rem; text-align: center;">Os dados foram enviados com segurança.<br>Nossa equipe iniciará o processamento e entrará em contato no e-mail informado.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    st.balloons()
 
