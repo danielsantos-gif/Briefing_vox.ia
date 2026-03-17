@@ -20,7 +20,8 @@ def init_connection():
 
 supabase = init_connection()
 
-# --- FUNÇÃO PARA IMAGEM DE FUNDO ---
+# --- FUNÇÃO OTIMIZADA PARA IMAGEM DE FUNDO (Fim da lentidão) ---
+@st.cache_data
 def get_base64_image(file_name):
     try:
         with open(file_name, "rb") as f:
@@ -28,7 +29,7 @@ def get_base64_image(file_name):
     except Exception:
         return ""
 
-# --- ESTILIZAÇÃO CUSTOMIZADA (CSS E ANIMAÇÕES) ---
+# --- ESTILIZAÇÃO CUSTOMIZADA (GRID DE 8 PONTOS E UX) ---
 st.markdown("""
     <style>
     /* Fundo App */
@@ -39,107 +40,49 @@ st.markdown("""
         background-color: #121218 !important;
         border: 1px solid #3a3a4a !important;
         color: #ffffff !important;
-        border-radius: 8px !important;
+        border-radius: 8px !important; /* Grid de 8 */
     }
     div[data-baseweb="input"] > div:focus-within, div[data-baseweb="textarea"] > div:focus-within {
         border: 1px solid #F58220 !important;
-        box-shadow: 0 0 5px rgba(245, 130, 32, 0.4) !important;
+        box-shadow: 0 0 8px rgba(245, 130, 32, 0.4) !important;
     }
 
-    /* Cards de Perguntas (Passo 6 e 7) */
+    /* Cards de Perguntas */
     .card-pergunta {
         background-color: #1a1a24;
-        padding: 15px;
-        border-radius: 10px;
+        padding: 16px; /* Grid de 8 */
+        border-radius: 8px; /* Grid de 8 */
         border: 1px solid #2a2a3a;
-        margin-bottom: 10px;
+        margin-bottom: 8px; /* Grid de 8 */
     }
     
-    /* --- CENTRALIZAÇÃO DE TÍTULOS E TEXTOS --- */
-    h1, h2, h3 { text-align: center !important; }
-    .stMarkdown p, .stAlert p { text-align: center !important; }
-    
-    /* PROTEÇÃO DE UX: Mantém campos alinhados à esquerda */
-    .stWidgetLabel p, .stRadio p, .stCheckbox p, .stDataFrame p, 
-    [data-testid="stDataEditor"] p, .card-pergunta p {
-        text-align: left !important;
+    /* BOTÕES: GRID DE 8 PONTOS E ALTO CONTRASTE */
+    .stButton > button {
+        border-radius: 8px !important; /* Grid de 8 */
+        height: 48px !important; /* Grid de 8 */
+        padding: 8px 16px !important; /* Grid de 8 */
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        border: 1px solid #3a3a4a !important;
     }
-    
-    /* Splash Screen (Fundo Animado Tech/Orgânico) */
-    .splash-bg {
-        background: linear-gradient(135deg, rgba(10,10,15,0.8), rgba(43,17,0,0.85), rgba(10,10,15,0.8), rgba(26,10,0,0.85));
-        background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
-        padding: 80px 40px;
-        border-radius: 20px;
-        text-align: center;
-        border: 1px solid #331a00;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-        margin-bottom: 30px;
-        backdrop-filter: blur(5px);
-    }
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* Botão Primário Customizado (Maior, texto escuro) */
-    div.stButton > button[kind="primary"] {
+    .stButton > button[kind="primary"] {
         background-color: #F58220 !important;
-        color: #050508 !important; /* Letra escura de alto contraste */
-        font-size: 1.3rem !important;
-        font-weight: 900 !important;
-        padding: 1.2rem 2rem !important;
+        color: #050508 !important; /* Texto bem escuro para alto contraste */
         border: none !important;
-        border-radius: 10px !important;
-        transition: all 0.3s ease !important;
-        width: 100%;
     }
-    div.stButton > button[kind="primary"]:hover {
+    .stButton > button[kind="primary"]:hover {
         background-color: #ff9d47 !important;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(245, 130, 32, 0.4) !important;
+        transform: translateY(-2px);
     }
     
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #0d0d14;
-        border-right: 1px solid #2a2a3a;
-    }
-    .sidebar-step {
-        padding: 12px 10px;
-        margin-bottom: 8px;
-        border-radius: 8px;
-        transition: all 0.4s ease;
+    /* Oculta scrollbar na Splash Screen e maximiza espaço */
+    .splash-container {
         display: flex;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
-        font-size: 0.95rem;
-    }
-    .sidebar-step.completed {
-        color: #F58220; 
-        background-color: rgba(245, 130, 32, 0.1);
-        font-weight: bold;
-    }
-    .sidebar-step.current {
-        background-color: #2a2a3a;
-        color: #ffffff;
-        font-weight: bold;
-        border-left: 4px solid #F58220;
-    }
-    .sidebar-step.pending {
-        color: #555555; /* Apagadinho */
-    }
-    .check-icon {
-        margin-right: 10px;
-        font-size: 1.2rem;
-    }
-    .check-anim {
-        animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-    @keyframes popIn {
-        0% { transform: scale(0) rotate(-45deg); opacity: 0; }
-        100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        min-height: 85vh;
+        text-align: center;
     }
     
     /* Animação Checkmark Final */
@@ -210,7 +153,6 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
-    # Imagem de fundo renderizada via Base64 para não quebrar o layout
     bg_image = get_base64_image("3d-graph-computer-illustration.jpg")
     if bg_image:
         st.markdown(f"""
@@ -223,52 +165,51 @@ if not st.session_state.intro_viewed:
         }}
         .stApp::before {{
             content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(10, 10, 15, 0.85); z-index: 0;
+            background-color: rgba(10, 10, 15, 0.88); z-index: 0;
         }}
+        /* Esconde padding padrão para caber na tela */
+        .block-container {{ padding-top: 2rem !important; padding-bottom: 0 !important; max-width: 100% !important; }}
         </style>
         """, unsafe_allow_html=True)
         
-    st.markdown('<div style="position: relative; z-index: 1;">', unsafe_allow_html=True)
-    
-    # Logos Centralizadas no Topo
-    c_espaco1, c_logo1, c_logo2, c_espaco2 = st.columns([1.5, 1, 1, 1.5])
-    with c_logo1:
-        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
-        except: st.caption("[Logo Nexus]")
-    with c_logo2:
-        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
-        except: st.caption("[Logo Vox.ia]")
-        
-    st.markdown("<br><br>", unsafe_allow_html=True)
-    
     st.markdown("""
-    <div class="splash-bg">
-        <h1 style="color: #F58220; font-size: 3.5rem; margin-bottom: 0;">Briefing para vox.ia:</h1>
-        <h2 style="font-size: 2.8rem; margin-top: 10px; color: #fff;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-        <p style="font-size: 1.2rem; color: #ccc; max-width: 800px; margin: 30px auto;">
+    <div class="splash-container" style="position: relative; z-index: 1;">
+        <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia:</h1>
+        <h2 style="font-size: 3rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+        <p style="font-size: 1.3rem; color: #ccc; max-width: 800px; margin: 32px auto 48px auto;">
             Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Botão Centralizado
-    _, col_btn, _ = st.columns([1, 1.5, 1])
+    # Botão Centralizado Maior
+    _, col_btn, _ = st.columns([3, 2, 3])
     with col_btn:
-        if st.button("🚀 Vamos começar", type="primary"):
+        st.markdown("<style>div.stButton > button { height: 64px !important; font-size: 20px !important; }</style>", unsafe_allow_html=True)
+        if st.button("🚀 Vamos começar", type="primary", use_container_width=True):
             st.session_state.intro_viewed = True
             st.rerun()
             
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Logos Centralizadas na Parte Inferior
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    _, c_logo1, c_logo2, _ = st.columns([4.5, 1.5, 1.5, 4.5])
+    with c_logo1:
+        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
+        except: pass
+    with c_logo2:
+        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
+        except: pass
+        
     st.stop()
 
-# --- CABEÇALHO PADRÃO (APÓS INTRODUÇÃO) ---
+# --- CABEÇALHO PADRÃO ALINHADO À DIREITA ---
 if st.session_state.intro_viewed:
-    col_l, _, col_r = st.columns([1, 2, 1])
-    with col_l:
-        try: st.image("logos nexus_negativa tagline (2).png", width=150)
+    c_espaco, c_logo1, c_logo2 = st.columns([7, 1.5, 1.5])
+    with c_logo1:
+        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
         except: st.caption("[Logo Nexus]")
-    with col_r:
-        try: st.image("VOXIA - Logo negativo branco.png", width=120)
+    with c_logo2:
+        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
         except: st.caption("[Logo Vox.ia]")
     st.divider()
 
@@ -343,8 +284,7 @@ if st.session_state.tipo_usuario == "admin":
 # ==========================================
 if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
     with st.sidebar:
-        st.markdown("<h3 style='text-align: center; color: #F58220;'>Progresso do Briefing</h3>", unsafe_allow_html=True)
-        st.divider()
+        st.markdown("<h3 style='color: #F58220; margin-bottom: 24px;'>Progresso do Briefing</h3>", unsafe_allow_html=True)
         
         etapas = [
             "Contexto da Análise",
@@ -361,19 +301,32 @@ if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
         for i, etapa in enumerate(etapas):
             step_idx = i + 1
             if step_idx < st.session_state.step:
-                html_sidebar += f'<div class="sidebar-step completed"><span class="check-icon check-anim">✔️</span> {step_idx}. {etapa}</div>'
+                # Circulo Check Verde
+                html_sidebar += f'''
+                <div style="display:flex; align-items:center; margin-bottom:16px; color:#ffffff; font-weight:600;">
+                    <div style="min-width:24px; height:24px; border:2px solid #4CAF50; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#4CAF50; margin-right:12px; font-size:14px; font-weight:900;">✓</div>
+                    {step_idx}. {etapa}
+                </div>'''
             elif step_idx == st.session_state.step:
-                html_sidebar += f'<div class="sidebar-step current"><span class="check-icon">📍</span> {step_idx}. {etapa}</div>'
+                # Circulo Pontilhado Laranja
+                html_sidebar += f'''
+                <div style="display:flex; align-items:center; margin-bottom:16px; color:#F58220; font-weight:bold;">
+                    <div style="min-width:24px; height:24px; border:2px dotted #F58220; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-right:12px;"></div>
+                    {step_idx}. {etapa}
+                </div>'''
             else:
-                html_sidebar += f'<div class="sidebar-step pending"><span class="check-icon" style="opacity:0.3;">⭕</span> {step_idx}. {etapa}</div>'
+                # Circulo Vazio (Linha Contínua Cinza)
+                html_sidebar += f'''
+                <div style="display:flex; align-items:center; margin-bottom:16px; color:#666;">
+                    <div style="min-width:24px; height:24px; border:2px solid #555; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-right:12px;"></div>
+                    {step_idx}. {etapa}
+                </div>'''
         
         st.markdown(html_sidebar, unsafe_allow_html=True)
 
 # ==========================================
 # FLUXO DO CLIENTE (WIZARD)
 # ==========================================
-barra_progresso = min(st.session_state.step, 8) / 8
-st.progress(barra_progresso)
 
 # --- PASSO 1: IDENTIFICAÇÃO ---
 if st.session_state.step == 1:
@@ -399,7 +352,9 @@ if st.session_state.step == 1:
     if st.session_state.dados['tipo_analise'] != "Uma Narrativa / Tema de Mercado":
         pode_ir = pode_ir and bool(st.session_state.dados['site_url'].strip() and "." in st.session_state.dados['site_url'])
         
-    st.button("Avançar", on_click=next_step, type="primary", disabled=not pode_ir)
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_a: st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True)
 
 # --- PASSO 2: PILARES DE AUTORIDADE ---
 elif st.session_state.step == 2:
@@ -411,10 +366,11 @@ elif st.session_state.step == 2:
     
     st.session_state.dados['desc_pilar'] = st.text_area("Descreva detalhadamente:", value=st.session_state.dados['desc_pilar'], height=150, label_visibility="collapsed", placeholder="Digite sua narrativa detalhada aqui...")
     
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
+    st.divider()
     pode_ir = bool(st.session_state.dados['desc_pilar'].strip())
-    col_a.button("Avançar", on_click=next_step, type="primary", disabled=not pode_ir)
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True)
 
 # --- PASSO 3: OBJETIVOS ESTRATÉGICOS ---
 elif st.session_state.step == 3:
@@ -434,11 +390,12 @@ elif st.session_state.step == 3:
     if obj3: st.session_state.dados['objetivos'].append("Mitigar Crises")
     if obj4: st.session_state.dados['objetivos'].append("Ampliar Influência")
 
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
-    
+    st.divider()
     pode_ir = len(st.session_state.dados['objetivos']) > 0
-    if col_a.button("Avançar", on_click=next_step, type="primary", disabled=not pode_ir): pass
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: 
+        if st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not pode_ir, use_container_width=True): pass
     if not pode_ir: st.error("⚠️ Por favor, selecione pelo menos um objetivo estratégico.")
 
 # --- PASSO 4: CENÁRIO COMPETITIVO ---
@@ -451,10 +408,10 @@ elif st.session_state.step == 4:
 
     with st.container(border=True):
         col_nome, col_site, col_del = st.columns([4, 4, 1])
-        with col_nome: st.markdown("<p style='text-align: left; font-weight: bold;'>Nome do Concorrente / Tema</p>", unsafe_allow_html=True)
+        with col_nome: st.markdown("**Nome do Concorrente / Tema**")
         with col_site: 
             if tipo != "Uma Narrativa / Tema de Mercado":
-                st.markdown("<p style='text-align: left; font-weight: bold;'>URL do Concorrente (Obrigatório)</p>", unsafe_allow_html=True)
+                st.markdown("**URL do Concorrente (Obrigatório)**")
         
         for i, item in enumerate(st.session_state.lista_conc):
             c1, c2, c3 = st.columns([4, 4, 1])
@@ -465,7 +422,7 @@ elif st.session_state.step == 4:
                 item["site"] = site_val
                 
                 if site_val.strip() and "." not in site_val:
-                    c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px; text-align: left;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
+                    c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
                     tem_erro_url = True
                     
             if c3.button("🗑️", key=f"del_c_{i}") and len(st.session_state.lista_conc) > 1:
@@ -483,22 +440,18 @@ elif st.session_state.step == 4:
     
     tem_nome_duplicado = len(nomes_inseridos) != len(set(nomes_inseridos))
     tem_site_duplicado = len(sites_inseridos) != len(set(sites_inseridos))
-
     btn_ready = len(validos) >= 5 and not tem_erro_url and not tem_nome_duplicado and not tem_site_duplicado
     
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: 
+        if st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not btn_ready, use_container_width=True): pass
     
-    if st.button("Avançar", on_click=next_step, type="primary", disabled=not btn_ready): pass
-    
-    if tem_nome_duplicado:
-        st.error("⚠️ Você inseriu concorrentes com o mesmo nome. Por favor, remova as repetições.")
-    if tem_site_duplicado and tipo != "Uma Narrativa / Tema de Mercado":
-        st.error("⚠️ Você inseriu URLs repetidas. Por favor, remova os sites duplicados.")
-    if tem_erro_url:
-        st.error("⚠️ Corrija os links inválidos marcados em vermelho para poder avançar.")
-    elif len(validos) < 5:
-        st.error(f"⚠️ Faltam {5 - len(validos)} concorrente(s) preenchidos para liberar a próxima etapa.")
+    if tem_nome_duplicado: st.error("⚠️ Você inseriu concorrentes com o mesmo nome. Por favor, remova as repetições.")
+    if tem_site_duplicado and tipo != "Uma Narrativa / Tema de Mercado": st.error("⚠️ Você inseriu URLs repetidas. Por favor, remova os sites duplicados.")
+    if tem_erro_url: st.error("⚠️ Corrija os links inválidos marcados em vermelho para poder avançar.")
+    elif len(validos) < 5: st.error(f"⚠️ Faltam {5 - len(validos)} concorrente(s) preenchidos para liberar a próxima etapa.")
 
 # --- PASSO 5: ATRIBUTOS DA MARCA ---
 elif st.session_state.step == 5:
@@ -516,7 +469,6 @@ elif st.session_state.step == 5:
             if c2.button("🗑️", key=f"del_pos_{i}") and len(st.session_state.lista_pos) > 1:
                 st.session_state.lista_pos.pop(i)
                 st.rerun()
-        
         if len(st.session_state.lista_pos) < 10:
             if st.button("➕ Adicionar Positivos"):
                 st.session_state.lista_pos.append("")
@@ -531,7 +483,6 @@ elif st.session_state.step == 5:
             if c2.button("🗑️", key=f"del_neg_{i}") and len(st.session_state.lista_neg) > 1:
                 st.session_state.lista_neg.pop(i)
                 st.rerun()
-        
         if len(st.session_state.lista_neg) < 10:
             if st.button("➕ Adicionar Negativos"):
                 st.session_state.lista_neg.append("")
@@ -543,31 +494,27 @@ elif st.session_state.step == 5:
     
     p_validos = len([x for x in st.session_state.lista_pos if x.strip()])
     n_validos = len([x for x in st.session_state.lista_neg if x.strip()])
-    
     pos_unicos = [x.strip().lower() for x in st.session_state.lista_pos if x.strip()]
     neg_unicos = [x.strip().lower() for x in st.session_state.lista_neg if x.strip()]
-    
     tem_pos_duplicado = len(pos_unicos) != len(set(pos_unicos))
     tem_neg_duplicado = len(neg_unicos) != len(set(neg_unicos))
     
     ready = p_validos >= 5 and n_validos >= 5 and st.session_state.dados['justificativa'].strip() != "" and not tem_pos_duplicado and not tem_neg_duplicado
     
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
-    if st.button("Avançar", on_click=next_step, type="primary", disabled=not ready): pass
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: 
+        if st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not ready, use_container_width=True): pass
     
-    if tem_pos_duplicado:
-        st.error("⚠️ Existem atributos positivos repetidos. Por favor, remova as duplicatas.")
-    if tem_neg_duplicado:
-        st.error("⚠️ Existem atributos negativos repetidos. Por favor, remova as duplicatas.")
-        
+    if tem_pos_duplicado: st.error("⚠️ Existem atributos positivos repetidos. Por favor, remova as duplicatas.")
+    if tem_neg_duplicado: st.error("⚠️ Existem atributos negativos repetidos. Por favor, remova as duplicatas.")
     if not ready and not tem_pos_duplicado and not tem_neg_duplicado:
         msg_erro = []
         if p_validos < 5: msg_erro.append(f"{5 - p_validos} atributos positivos")
         if n_validos < 5: msg_erro.append(f"{5 - n_validos} atributos negativos")
         if not st.session_state.dados['justificativa'].strip(): msg_erro.append("a justificativa")
-        if msg_erro:
-            st.error(f"⚠️ Ação Barrada: Faltam {', '.join(msg_erro)}.")
+        if msg_erro: st.error(f"⚠️ Ação Barrada: Faltam {', '.join(msg_erro)}.")
 
 # --- PASSO 6: INTELIGÊNCIA DE BUSCA (BRANDED) ---
 elif st.session_state.step == 6:
@@ -583,8 +530,7 @@ elif st.session_state.step == 6:
 
     with st.container(border=True):
         new_b = st.text_input("Nova pergunta (Aperte Enter para adicionar):", key="input_b", placeholder=f"Ex: A {marca_parametro} é recomendada para projetos...?")
-        
-        if st.button("➕ Adicionar Pergunta Branded") or new_b:
+        if st.button("➕ Adicionar Pergunta") or new_b:
             if new_b.strip():
                 if marca_parametro.lower() not in new_b.lower():
                     st.error(f"⚠️ Ação Barrada: O termo '{marca_parametro}' precisa obrigatoriamente constar na sua pergunta.")
@@ -597,19 +543,19 @@ elif st.session_state.step == 6:
             
     for i, p in enumerate(st.session_state.lista_b):
         with st.container():
-            st.markdown(f'<div class="card-pergunta"><p>{p}</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card-pergunta"><p style="margin:0;">{p}</p></div>', unsafe_allow_html=True)
             if st.button("Remover", key=f"rb_{i}"):
                 st.session_state.lista_b.pop(i)
                 st.rerun()
 
-    st.divider()
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
-    
     b_prontos = len(st.session_state.lista_b)
     pode_avancar = b_prontos >= 5
     
-    if st.button("Avançar para Perguntas de Mercado", on_click=next_step, type="primary", disabled=not pode_avancar): pass
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: 
+        if st.button("Avançar ➡️", on_click=next_step, type="primary", disabled=not pode_avancar, use_container_width=True): pass
     if not pode_avancar:
         st.error(f"⚠️ Ação Barrada: Faltam {5 - b_prontos} perguntas institucionais para concluir esta etapa.")
 
@@ -627,8 +573,7 @@ elif st.session_state.step == 7:
 
     with st.container(border=True):
         new_u = st.text_input("Nova pergunta de mercado (Aperte Enter):", key="input_u", placeholder="Ex: Qual a melhor empresa de [Setor] no Brasil?")
-        
-        if st.button("➕ Adicionar Pergunta de Mercado") or new_u:
+        if st.button("➕ Adicionar Pergunta") or new_u:
             if new_u.strip():
                 if marca_parametro.lower() in new_u.lower():
                     st.error(f"⚠️ Ação Barrada: Remova o termo '{marca_parametro}'. O objetivo aqui é avaliar a recomendação orgânica sem citar a marca.")
@@ -641,19 +586,19 @@ elif st.session_state.step == 7:
                 
     for i, p in enumerate(st.session_state.lista_u):
         with st.container():
-            st.markdown(f'<div class="card-pergunta"><p>{p}</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card-pergunta"><p style="margin:0;">{p}</p></div>', unsafe_allow_html=True)
             if st.button("Remover", key=f"ru_{i}"):
                 st.session_state.lista_u.pop(i)
                 st.rerun()
 
-    st.divider()
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
-    
     u_prontos = len(st.session_state.lista_u)
     pode_avancar = u_prontos >= 5
     
-    if st.button("Ir para Revisão Final", on_click=next_step, type="primary", disabled=not pode_avancar): pass
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    with col_a: 
+        if st.button("Ir para Revisão ➡️", on_click=next_step, type="primary", disabled=not pode_avancar, use_container_width=True): pass
     if not pode_avancar:
         st.error(f"⚠️ Ação Barrada: Faltam {5 - u_prontos} perguntas de mercado para concluir o formulário.")
 
@@ -674,13 +619,14 @@ elif st.session_state.step == 8:
     
     st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
     
-    col_v, col_a = st.columns([1, 5])
-    col_v.button("Voltar", on_click=prev_step)
-    
     pode_enviar = st.session_state.get('lgpd', False) and "@" in st.session_state.dados['email']
     
+    st.divider()
+    col_v, col_a, _ = st.columns([2, 2, 6])
+    with col_v: st.button("⬅️ Voltar", on_click=prev_step, use_container_width=True)
+    
     with col_a:
-        if st.button("🚀 FINALIZAR BRIEFING", type="primary", disabled=not pode_enviar):
+        if st.button("🚀 ENVIAR BRIEFING", type="primary", disabled=not pode_enviar, use_container_width=True):
             descricao_completa = f"E-mail Contato: {st.session_state.dados['email']}\nObjetivos: {', '.join(st.session_state.dados['objetivos'])}\n\nNarrativa Central: {st.session_state.dados['desc_pilar']}\n\nNuances/Adicional: {st.session_state.dados['nuances']}"
             
             prot = f"BX-{random.randint(1000, 9999)}"
@@ -704,13 +650,13 @@ elif st.session_state.step == 8:
 # --- PASSO 9: SUCESSO (CHECKMARK ANIMADO) ---
 elif st.session_state.step == 9:
     st.markdown("""
-        <div style="display:flex; justify-content:center; align-items:center; height:50vh; flex-direction:column;">
+        <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column;">
             <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                 <circle class="checkmark_circle" cx="26" cy="26" r="25" fill="none"/>
                 <path class="checkmark_check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
             <h1 style="margin-top: 30px; font-size: 3rem;">Briefing Concluído!</h1>
-            <p style="color: #ccc; font-size: 1.2rem; text-align: center;">Os dados foram enviados com segurança.<br>Nossa equipe iniciará o processamento e entrará em contato no e-mail informado.</p>
+            <p style="color: #ccc; font-size: 1.2rem; text-align: center; margin-top: 15px;">Os dados foram enviados com segurança.<br>Nossa equipe iniciará o processamento e entrará em contato no e-mail informado.</p>
         </div>
     """, unsafe_allow_html=True)
     st.balloons()
