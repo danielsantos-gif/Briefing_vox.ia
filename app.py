@@ -49,6 +49,26 @@ st.markdown("""
         margin-bottom: 10px;
     }
     
+    /* --- CENTRALIZAÇÃO DE TÍTULOS E TEXTOS --- */
+    h1, h2, h3 {
+        text-align: center !important;
+    }
+    
+    /* Centraliza os textos descritivos e alertas */
+    .stMarkdown p, .stAlert p {
+        text-align: center !important;
+    }
+    
+    /* PROTEÇÃO DE UX: Mantém campos de formulário, botões de rádio e checkbox alinhados à esquerda */
+    .stWidgetLabel p, 
+    .stRadio p, 
+    .stCheckbox p, 
+    .stDataFrame p, 
+    [data-testid="stDataEditor"] p, 
+    .card-pergunta p {
+        text-align: left !important;
+    }
+    
     /* Splash Screen (Fundo Animado Tech/Orgânico) */
     .splash-bg {
         background: linear-gradient(135deg, #0a0a0f, #2b1100, #0a0a0f, #1a0a00);
@@ -128,7 +148,8 @@ with col_l:
     try: st.image("logos nexus_negativa tagline (2).png", width=150)
     except: st.caption("[Logo Nexus]")
 with col_r:
-    try: st.image("WhatsApp Image 2026-03-17 at 16.40.54 (1).jpeg", width=120)
+    # AQUI ESTÁ O NOME ATUALIZADO DO ARQUIVO DA VOX.IA
+    try: st.image("VOXIA - Logo negativo branco.png", width=120)
     except: st.caption("[Logo Vox.ia]")
 st.divider()
 
@@ -177,7 +198,6 @@ if not st.session_state.intro_viewed:
     <br>
     """, unsafe_allow_html=True)
     
-    # Botão centralizado
     _, col_btn, _ = st.columns([1, 1, 1])
     with col_btn:
         if st.button("🚀 Vamos começar", type="primary"):
@@ -289,7 +309,7 @@ elif st.session_state.step == 2:
     st.title("2. Pilares de Autoridade (Porta-vozes e Narrativas)")
     st.markdown("A reputação em IA é construída por quem fala e pelo que é dito. Vamos detalhar as teses por trás da marca.")
     
-    st.markdown("### Narrativa Central ou 'Tese' da Marca:")
+    st.markdown("### Narrativa Central ou 'Tese' da Marca")
     st.info("Qual é a principal mensagem que você quer que a IA entregue ao falar de você? (Ex: 'Somos a empresa que humaniza a tecnologia'). Descreva a narrativa para que possamos medir o alinhamento das respostas.")
     
     st.session_state.dados['desc_pilar'] = st.text_area("Descreva detalhadamente:", value=st.session_state.dados['desc_pilar'], height=150, label_visibility="collapsed", placeholder="Digite sua narrativa detalhada aqui...")
@@ -334,10 +354,11 @@ elif st.session_state.step == 4:
 
     with st.container(border=True):
         col_nome, col_site, col_del = st.columns([4, 4, 1])
-        with col_nome: st.markdown("**Nome do Concorrente / Tema**")
+        # Força alinhamento à esquerda via HTML para combinar perfeitamente com os inputs
+        with col_nome: st.markdown("<p style='text-align: left; font-weight: bold;'>Nome do Concorrente / Tema</p>", unsafe_allow_html=True)
         with col_site: 
             if tipo != "Uma Narrativa / Tema de Mercado":
-                st.markdown("**URL do Concorrente (Obrigatório)**")
+                st.markdown("<p style='text-align: left; font-weight: bold;'>URL do Concorrente (Obrigatório)</p>", unsafe_allow_html=True)
         
         for i, item in enumerate(st.session_state.lista_conc):
             c1, c2, c3 = st.columns([4, 4, 1])
@@ -348,7 +369,7 @@ elif st.session_state.step == 4:
                 item["site"] = site_val
                 
                 if site_val.strip() and "." not in site_val:
-                    c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
+                    c2.markdown(f'<p style="color: #ff4d4d; font-size: 12px; margin-top: -15px; text-align: left;">⚠️ Link inválido. Adicione o domínio correto (ex: .com.br)</p>', unsafe_allow_html=True)
                     tem_erro_url = True
                     
             if c3.button("🗑️", key=f"del_c_{i}") and len(st.session_state.lista_conc) > 1:
@@ -421,7 +442,7 @@ elif st.session_state.step == 5:
                 st.rerun()
 
     st.divider()
-    st.markdown("**Justificativa Estratégica**")
+    st.markdown("### Justificativa Estratégica")
     st.session_state.dados['justificativa'] = st.text_area("Por que esses atributos específicos são fundamentais para sua estratégia?", value=st.session_state.dados['justificativa'], placeholder="Como elas ajudam a marca a se diferenciar no mercado?")
     
     p_validos = len([x for x in st.session_state.lista_pos if x.strip()])
@@ -552,7 +573,6 @@ elif st.session_state.step == 8:
     st.markdown("### Contato e Considerações Finais")
     st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados do produto:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
     
-    # Destacando o texto da Nuance (Em bold e subtítulo)
     st.markdown("<br><h4><strong>Há algum detalhe, crise recente ou nuances que não foram abordados nas perguntas anteriores e que você considera vital para nossa análise?</strong></h4>", unsafe_allow_html=True)
     st.session_state.dados['nuances'] = st.text_area("Detalhes adicionais:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=150)
     
@@ -579,7 +599,6 @@ elif st.session_state.step == 8:
                 "status": "Novo"
             }).execute()
             
-            # Avança direto para a Tela 9 (Sucesso)
             st.session_state.step = 9
             st.rerun()
             
@@ -599,4 +618,5 @@ elif st.session_state.step == 9:
         </div>
     """, unsafe_allow_html=True)
     st.balloons()
+
 
