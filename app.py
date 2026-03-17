@@ -320,8 +320,20 @@ if not st.session_state.acesso_liberado:
 # PAINEL ADMIN (DASHBOARD APRIMORADO)
 # ==========================================
 if st.session_state.tipo_usuario == "admin":
-    st.title("Dashboard Estratégico - Gestão de Briefings")
-    tab_g, tab_m = st.tabs(["Gestão e Tabela de Status", "Inspeção Profunda e Download"])
+    # Cabeçalho com botão de Sair alinhado à direita
+    c_title, c_btn = st.columns([8, 2])
+    with c_title:
+        st.title("⚙️ Dashboard Estratégico")
+    with c_btn:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🚪 Sair do Painel", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+            
+    st.markdown("Gestão centralizada de briefings, status de clientes e exportação de dados.")
+    st.divider()
+
+    tab_g, tab_m = st.tabs(["📊 Gestão de Status e Tabela", "🔎 Inspeção e Download"])
     
     with tab_g:
         # Busca os dados no banco
@@ -329,62 +341,81 @@ if st.session_state.tipo_usuario == "admin":
         if res_adm.data:
             df_admin = pd.DataFrame(res_adm.data)
             
-            # Se a coluna 'responsavel' não existir no banco antigo, cria no DataFrame temporário
             if 'responsavel' not in df_admin.columns:
                 df_admin['responsavel'] = ""
                 
-            df_edit = df_admin[['id', 'data_envio', 'nome_sujeito', 'status', 'responsavel', 'protocolo']].copy()
+            # Reorganizando a ordem das colunas para melhor leitura UX
+            df_edit = df_admin[['id', 'data_envio', 'protocolo', 'nome_sujeito', 'status', 'responsavel']].copy()
             df_edit['data_envio'] = pd.to_datetime(df_edit['data_envio']).dt.strftime('%d/%m/%Y')
             
-            st.markdown("### Controle de Etapas e Responsáveis")
-            st.caption("Edite o status ou o responsável diretamente na tabela e clique em Salvar.")
-            
-            # Tabela Editável com Tags Coloridas (SelectboxColumn)
-            edited_df = st.data_editor(
-                df_edit,
-                column_config={
-                    "status": st.column_config.SelectboxColumn(
-                        "Progresso",
-                        options=["Novo", "Briefing aprovado", "Cadastro na plataforma feito", "Em produção", "Produção finalizada", "Apresentação agendada", "Concluído", "Em ajuste"],
-                        required=True
-                    ),
-                    "responsavel": st.column_config.TextColumn("Responsável", help="Nome da pessoa responsável"),
-                    "id": None, # Oculta o ID interno
-                    "protocolo": st.column_config.TextColumn("Protocolo", disabled=True),
-                    "data_envio": st.column_config.TextColumn("Data", disabled=True),
-                    "nome_sujeito": st.column_config.TextColumn("Cliente/Sujeito", disabled=True)
-                },
-                use_container_width=True,
-                hide_index=True,
-                key="tabela_admin"
-            )
-            
-            # Botão para salvar alterações na tabela
-            if st.button("💾 Salvar Alterações na Tabela", type="primary"):
-                for index, row in edited_df.iterrows():
-                    orig_row = df_edit.iloc[index]
-                    if row['status'] != orig_row['status'] or row['responsavel'] != orig_row['responsavel']:
-                        try:
-                            supabase.table("briefings").update({
-                                "status": row['status'],
-                                "responsavel": row['responsavel']
-                            }).eq("id", row['id']).execute()
-                        except Exception as e:
-                            st.error("Erro ao salvar responsável. Certifique-se de que a coluna 'responsavel' existe no Supabase.")
-                st.success("Tabela atualizada com sucesso!")
-                st.rerun()
+            with st.container(border=True):
+                st.subheader("📋 Controle de Etapas e Responsáveis")
+                st.caption("Edite o status ou o responsável diretamente na tabela abaixo. As alterações ficarão destacadas até você salvar.")
                 
-            st.divider()
-            st.text_input("Gerar Link de Errata para Protocolo:", key="gen_err")
-            if st.session_state.gen_err:
-                st.code(f"https://{st.secrets.get('APP_URL', 'seu-site')}.app/?errata={st.session_state.gen_err}")
+                # Tabela com larguras ajustadas e layout clean
+                edited_df = st.data_editor(
+                    df_edit,
+                    column_config={
+                        "id": None, # Oculta o ID interno
+                        "data_envio": st.column_config.TextColumn("Data", disabled=True, width="small"),
+                        "protocolo": st.column_config.TextColumn("Protocolo", disabled=True, width="small"),
+                        "nome_sujeito": st.column_config.TextColumn("Cliente / Sujeito", disabled=True, width="medium"),
+                        "status": st.column_config.SelectboxColumn(
+                            "Progresso atual",
+                            options=["Novo", "Briefing aprovado", "Cadastro na plataforma feito", "Em produção", "Produção finalizada", "Apresentação agendada", "Concluído", "Em ajuste"],
+                            required=True,
+                            width="medium"
+                        ),
+                        "responsavel": st.column_config.TextColumn("Responsável", help="Nome da pessoa", width="medium"),
+                    },
+                    use_container_width=True,
+                    hide_index=True,
+                    key="tabela_admin"
+                )
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # Blocos de Ações divididos lado a lado
+            col_acoes1, col_acoes2 = st.columns(2)
+            
+            with col_acoes1:
+                with st.container(border=True):
+                    st.markdown("**💾 Confirmar Atualizações**")
+                    st.caption("Grave as mudanças feitas na tabela no banco de dados.")
+                    if st.button("Salvar Alterações", type="primary", use_container_width=True):
+                        with st.spinner("Salvando no Supabase..."):
+                            for index, row in edited_df.iterrows():
+                                orig_row = df_edit.iloc[index]
+                                if row['status'] != orig_row['status'] or row['responsavel'] != orig_row['responsavel']:
+                                    try:
+                                        supabase.table("briefings").update({
+                                            "status": row['status'],
+                                            "responsavel": row['responsavel']
+                                        }).eq("id", row['id']).execute()
+                                    except Exception:
+                                        st.error("Erro ao salvar responsável. Verifique a tabela no banco.")
+                            st.success("Tabela atualizada com sucesso!")
+                            st.rerun()
+
+            with col_acoes2:
+                with st.container(border=True):
+                    st.markdown("**🔗 Gerar Link de Errata**")
+                    st.caption("Insira o protocolo do cliente para gerar um link de correção.")
+                    c_inp, c_out = st.columns([1, 1])
+                    with c_inp:
+                        protocolo_errata = st.text_input("Protocolo", key="gen_err", label_visibility="collapsed", placeholder="Ex: BX-1234")
+                    with c_out:
+                        if protocolo_errata:
+                            st.code(f"https://{st.secrets.get('APP_URL', 'seu-site')}.app/?errata={protocolo_errata}")
+                        else:
+                            st.info("Aguardando protocolo...")
+
         else:
             st.info("Nenhum briefing recebido ainda.")
             
     with tab_m:
         st.subheader("Inspeção Profunda e Download")
         if res_adm.data:
-            # Lista suspensa baseada no NOME DO SUJEITO (com protocolo entre parênteses para evitar nomes iguais)
             opcoes_dropdown = [""] + [f"{row['nome_sujeito']} (Prot: {row['protocolo']})" for _, row in df_admin.iterrows()]
             selecao = st.selectbox("Selecione um cliente para ver detalhes e exportar:", opcoes_dropdown)
             
@@ -392,14 +423,19 @@ if st.session_state.tipo_usuario == "admin":
                 prot_selecionado = selecao.split(" (Prot: ")[-1].replace(")", "")
                 dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
                 
-                # Gráficos Dinâmicos
-                st.markdown(f"**Análise de Volume de Prompts: {dados_prot['nome_sujeito']}**")
-                len_b = len(dados_prot.get('prompts_branded', []))
-                len_u = len(dados_prot.get('prompts_unbranded', []))
-                st.bar_chart(pd.DataFrame({"Qtd de Perguntas": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
+                # Dividindo Gráfico e Download lado a lado
+                c_grafico, c_doc = st.columns([1.5, 1])
                 
-                # Formatando Texto para Download (.txt / compatível com Word) com Atributos Incluídos
-                texto_doc = f"""DIAGNÓSTICO VOX.IA - BRIEFING COMPLETO
+                with c_grafico:
+                    st.markdown(f"**Análise de Volume de Prompts: {dados_prot['nome_sujeito']}**")
+                    len_b = len(dados_prot.get('prompts_branded', []))
+                    len_u = len(dados_prot.get('prompts_unbranded', []))
+                    st.bar_chart(pd.DataFrame({"Qtd de Perguntas": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
+                
+                with c_doc:
+                    st.markdown("**Exportação Rápida**")
+                    st.caption("Baixe o documento TXT formatado com todos os dados preenchidos pelo cliente.")
+                    texto_doc = f"""DIAGNÓSTICO VOX.IA - BRIEFING COMPLETO
 ==================================================
 Sujeito Analisado: {dados_prot['nome_sujeito']}
 Protocolo: {dados_prot['protocolo']}
@@ -412,35 +448,26 @@ CONTEXTO E OBJETIVOS:
 {dados_prot.get('descricao', '')}
 
 CENÁRIO COMPETITIVO:
---------------------------------------------------
-"""
-                for c in dados_prot.get('concorrentes', []):
-                    texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
-                
-                texto_doc += "\nATRIBUTOS DA MARCA:\n--------------------------------------------------\n"
-                texto_doc += "Atributos Positivos (Projetar):\n"
-                for p in dados_prot.get('atributos_pos', []):
-                    texto_doc += f"- {p}\n"
-                    
-                texto_doc += "\nAtributos Negativos (Mitigar):\n"
-                for n in dados_prot.get('atributos_neg', []):
-                    texto_doc += f"- {n}\n"
-                    
-                texto_doc += f"\nJustificativa Estratégica:\n{dados_prot.get('contexto_atributos', '')}\n"
+--------------------------------------------------\n"""
+                    for c in dados_prot.get('concorrentes', []):
+                        texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
+                    texto_doc += "\nATRIBUTOS DA MARCA:\n--------------------------------------------------\n"
+                    texto_doc += "Atributos Positivos (Projetar):\n"
+                    for p in dados_prot.get('atributos_pos', []):
+                        texto_doc += f"- {p}\n"
+                    texto_doc += "\nAtributos Negativos (Mitigar):\n"
+                    for n in dados_prot.get('atributos_neg', []):
+                        texto_doc += f"- {n}\n"
+                    texto_doc += f"\nJustificativa Estratégica:\n{dados_prot.get('contexto_atributos', '')}\n"
+                    texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
+                    for p in dados_prot.get('prompts_branded', []):
+                        texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
+                    for p in dados_prot.get('prompts_unbranded', []):
+                        texto_doc += f"- {p.get('Pergunta', '')}\n"
+                        
+                    st.download_button(f"📄 Baixar Briefing (.txt)", data=texto_doc, file_name=f"{dados_prot['nome_sujeito']}_briefing.txt", mime="text/plain", type="primary", use_container_width=True)
 
-                texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
-                for p in dados_prot.get('prompts_branded', []):
-                    texto_doc += f"- {p.get('Pergunta', '')}\n"
-                    
-                texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
-                for p in dados_prot.get('prompts_unbranded', []):
-                    texto_doc += f"- {p.get('Pergunta', '')}\n"
-                    
-                st.download_button(f"Baixar Briefing de {dados_prot['nome_sujeito']} (.txt)", data=texto_doc, file_name=f"{dados_prot['nome_sujeito']}_briefing.txt", mime="text/plain", type="primary")
-
-    if st.button("Sair"):
-        st.session_state.clear()
-        st.rerun()
     st.stop()
 
 # ==========================================
