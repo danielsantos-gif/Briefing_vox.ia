@@ -523,6 +523,7 @@ CENÁRIO COMPETITIVO:
                     st.download_button(f"📄 Baixar Briefing (.txt)", data=texto_doc, file_name=f"{dados_prot['nome_sujeito']}_briefing.txt", mime="text/plain", type="primary", use_container_width=True)
 
     st.stop()
+
 # ==========================================
 # BARRA LATERAL (SIDEBAR) DE PROGRESSO
 # ==========================================
