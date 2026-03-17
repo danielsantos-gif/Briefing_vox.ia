@@ -445,15 +445,16 @@ if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
         img_nexus_sidebar = get_base64_image("logos nexus_negativa tagline (2).png")
         img_voxia_sidebar = get_base64_image("VOXIA - Logo negativo branco.png")
         
-        # Logos empilhadas (Nexus em cima, Vox.ia embaixo) e centralizadas
+        # Sugestão: Alinhado à esquerda, lado a lado, com divisor vertical e linha de base
         st.markdown(f"""
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; margin-top: 10px;">
-<img src="data:image/png;base64,{img_nexus_sidebar}" width="110">
-<img src="data:image/png;base64,{img_voxia_sidebar}" width="90">
+<div style="display: flex; justify-content: flex-start; align-items: center; gap: 16px; margin-bottom: 20px; margin-top: 5px; padding-bottom: 20px; border-bottom: 1px solid #2a2a3a;">
+<img src="data:image/png;base64,{img_nexus_sidebar}" width="90">
+<div style="width: 1px; height: 28px; background-color: #3a3a4a;"></div>
+<img src="data:image/png;base64,{img_voxia_sidebar}" width="70">
 </div>
 """, unsafe_allow_html=True)
             
-        st.markdown("<h2 style='color: #F58220; margin-top: 5px; margin-bottom: 24px; text-align: left !important; font-size: 1.8rem;'>Progresso do Briefing</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #F58220; margin-top: 0px; margin-bottom: 24px; text-align: left !important; font-size: 1.6rem;'>Progresso do Briefing</h2>", unsafe_allow_html=True)
         
         etapas = [
             "Contexto da Análise",
