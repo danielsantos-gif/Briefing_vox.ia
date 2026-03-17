@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import random
+import base64
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
@@ -19,14 +20,19 @@ def init_connection():
 
 supabase = init_connection()
 
+# --- FUNÇÃO PARA IMAGEM DE FUNDO ---
+def get_base64_image(file_name):
+    try:
+        with open(file_name, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception:
+        return ""
+
 # --- ESTILIZAÇÃO CUSTOMIZADA (CSS E ANIMAÇÕES) ---
 st.markdown("""
     <style>
     /* Fundo App */
     .stApp { background-color: #0a0a0f; }
-    
-    /* Botões */
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
     
     /* Contraste melhorado para todas as caixas de texto e input */
     div[data-baseweb="input"] > div, div[data-baseweb="textarea"] > div {
@@ -50,36 +56,27 @@ st.markdown("""
     }
     
     /* --- CENTRALIZAÇÃO DE TÍTULOS E TEXTOS --- */
-    h1, h2, h3 {
-        text-align: center !important;
-    }
+    h1, h2, h3 { text-align: center !important; }
+    .stMarkdown p, .stAlert p { text-align: center !important; }
     
-    /* Centraliza os textos descritivos e alertas */
-    .stMarkdown p, .stAlert p {
-        text-align: center !important;
-    }
-    
-    /* PROTEÇÃO DE UX: Mantém campos de formulário, botões de rádio e checkbox alinhados à esquerda */
-    .stWidgetLabel p, 
-    .stRadio p, 
-    .stCheckbox p, 
-    .stDataFrame p, 
-    [data-testid="stDataEditor"] p, 
-    .card-pergunta p {
+    /* PROTEÇÃO DE UX: Mantém campos alinhados à esquerda */
+    .stWidgetLabel p, .stRadio p, .stCheckbox p, .stDataFrame p, 
+    [data-testid="stDataEditor"] p, .card-pergunta p {
         text-align: left !important;
     }
     
     /* Splash Screen (Fundo Animado Tech/Orgânico) */
     .splash-bg {
-        background: linear-gradient(135deg, #0a0a0f, #2b1100, #0a0a0f, #1a0a00);
+        background: linear-gradient(135deg, rgba(10,10,15,0.8), rgba(43,17,0,0.85), rgba(10,10,15,0.8), rgba(26,10,0,0.85));
         background-size: 400% 400%;
         animation: gradientMove 15s ease infinite;
         padding: 80px 40px;
         border-radius: 20px;
         text-align: center;
         border: 1px solid #331a00;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.7);
         margin-bottom: 30px;
+        backdrop-filter: blur(5px);
     }
     @keyframes gradientMove {
         0% { background-position: 0% 50%; }
@@ -87,32 +84,68 @@ st.markdown("""
         100% { background-position: 0% 50%; }
     }
     
+    /* Botão Primário Customizado (Maior, texto escuro) */
+    div.stButton > button[kind="primary"] {
+        background-color: #F58220 !important;
+        color: #050508 !important; /* Letra escura de alto contraste */
+        font-size: 1.3rem !important;
+        font-weight: 900 !important;
+        padding: 1.2rem 2rem !important;
+        border: none !important;
+        border-radius: 10px !important;
+        transition: all 0.3s ease !important;
+        width: 100%;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #ff9d47 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(245, 130, 32, 0.4) !important;
+    }
+    
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #0d0d14;
+        border-right: 1px solid #2a2a3a;
+    }
+    .sidebar-step {
+        padding: 12px 10px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        transition: all 0.4s ease;
+        display: flex;
+        align-items: center;
+        font-size: 0.95rem;
+    }
+    .sidebar-step.completed {
+        color: #F58220; 
+        background-color: rgba(245, 130, 32, 0.1);
+        font-weight: bold;
+    }
+    .sidebar-step.current {
+        background-color: #2a2a3a;
+        color: #ffffff;
+        font-weight: bold;
+        border-left: 4px solid #F58220;
+    }
+    .sidebar-step.pending {
+        color: #555555; /* Apagadinho */
+    }
+    .check-icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    .check-anim {
+        animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes popIn {
+        0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+        100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    
     /* Animação Checkmark Final */
-    .success-checkmark {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto;
-        display: block;
-    }
-    .checkmark_circle {
-        stroke-dasharray: 166;
-        stroke-dashoffset: 166;
-        stroke-width: 4;
-        stroke-miterlimit: 10;
-        stroke: #4CAF50;
-        fill: none;
-        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-    }
-    .checkmark_check {
-        transform-origin: 50% 50%;
-        stroke-dasharray: 48;
-        stroke-dashoffset: 48;
-        stroke-width: 4;
-        stroke-linecap: round;
-        stroke: #4CAF50;
-        fill: none;
-        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
-    }
+    .success-checkmark { width: 120px; height: 120px; margin: 0 auto; display: block; }
+    .checkmark_circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 4; stroke-miterlimit: 10; stroke: #4CAF50; fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+    .checkmark_check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke-linecap: round; stroke: #4CAF50; fill: none; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards; }
     @keyframes stroke { 100% { stroke-dashoffset: 0; } }
     </style>
     """, unsafe_allow_html=True)
@@ -142,16 +175,6 @@ if 'limpar_u' not in st.session_state: st.session_state.limpar_u = False
 def next_step(): st.session_state.step += 1
 def prev_step(): st.session_state.step -= 1
 
-# --- CABEÇALHO ---
-col_l, _, col_r = st.columns([1, 2, 1])
-with col_l:
-    try: st.image("logos nexus_negativa tagline (2).png", width=150)
-    except: st.caption("[Logo Nexus]")
-with col_r:
-    # AQUI ESTÁ O NOME ATUALIZADO DO ARQUIVO DA VOX.IA
-    try: st.image("VOXIA - Logo negativo branco.png", width=120)
-    except: st.caption("[Logo Vox.ia]")
-st.divider()
 
 # ==========================================
 # MÓDULO DE ERRATA (VIA URL)
@@ -187,6 +210,37 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
+    # Imagem de fundo renderizada via Base64 para não quebrar o layout
+    bg_image = get_base64_image("3d-graph-computer-illustration.jpg")
+    if bg_image:
+        st.markdown(f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/jpeg;base64,{bg_image}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        .stApp::before {{
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(10, 10, 15, 0.85); z-index: 0;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+        
+    st.markdown('<div style="position: relative; z-index: 1;">', unsafe_allow_html=True)
+    
+    # Logos Centralizadas no Topo
+    c_espaco1, c_logo1, c_logo2, c_espaco2 = st.columns([1.5, 1, 1, 1.5])
+    with c_logo1:
+        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
+        except: st.caption("[Logo Nexus]")
+    with c_logo2:
+        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
+        except: st.caption("[Logo Vox.ia]")
+        
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    
     st.markdown("""
     <div class="splash-bg">
         <h1 style="color: #F58220; font-size: 3.5rem; margin-bottom: 0;">Briefing para vox.ia:</h1>
@@ -195,18 +249,31 @@ if not st.session_state.intro_viewed:
             Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
         </p>
     </div>
-    <br>
     """, unsafe_allow_html=True)
     
-    _, col_btn, _ = st.columns([1, 1, 1])
+    # Botão Centralizado
+    _, col_btn, _ = st.columns([1, 1.5, 1])
     with col_btn:
         if st.button("🚀 Vamos começar", type="primary"):
             st.session_state.intro_viewed = True
             st.rerun()
+            
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
+# --- CABEÇALHO PADRÃO (APÓS INTRODUÇÃO) ---
+if st.session_state.intro_viewed:
+    col_l, _, col_r = st.columns([1, 2, 1])
+    with col_l:
+        try: st.image("logos nexus_negativa tagline (2).png", width=150)
+        except: st.caption("[Logo Nexus]")
+    with col_r:
+        try: st.image("VOXIA - Logo negativo branco.png", width=120)
+        except: st.caption("[Logo Vox.ia]")
+    st.divider()
+
 # ==========================================
-# LOGIN PROFISSIONAL (PADRÃO WEB)
+# 1. LOGIN PROFISSIONAL (PADRÃO WEB)
 # ==========================================
 if not st.session_state.acesso_liberado:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -272,9 +339,39 @@ if st.session_state.tipo_usuario == "admin":
     st.stop()
 
 # ==========================================
+# BARRA LATERAL (SIDEBAR) DE PROGRESSO
+# ==========================================
+if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
+    with st.sidebar:
+        st.markdown("<h3 style='text-align: center; color: #F58220;'>Progresso do Briefing</h3>", unsafe_allow_html=True)
+        st.divider()
+        
+        etapas = [
+            "Contexto da Análise",
+            "Pilares de Autoridade",
+            "Objetivos Estratégicos",
+            "Cenário Competitivo",
+            "Atributos da Marca",
+            "Busca Institucional",
+            "Busca de Mercado",
+            "Revisão Final"
+        ]
+        
+        html_sidebar = ""
+        for i, etapa in enumerate(etapas):
+            step_idx = i + 1
+            if step_idx < st.session_state.step:
+                html_sidebar += f'<div class="sidebar-step completed"><span class="check-icon check-anim">✔️</span> {step_idx}. {etapa}</div>'
+            elif step_idx == st.session_state.step:
+                html_sidebar += f'<div class="sidebar-step current"><span class="check-icon">📍</span> {step_idx}. {etapa}</div>'
+            else:
+                html_sidebar += f'<div class="sidebar-step pending"><span class="check-icon" style="opacity:0.3;">⭕</span> {step_idx}. {etapa}</div>'
+        
+        st.markdown(html_sidebar, unsafe_allow_html=True)
+
+# ==========================================
 # FLUXO DO CLIENTE (WIZARD)
 # ==========================================
-# A barra de progresso não deve quebrar na página 9
 barra_progresso = min(st.session_state.step, 8) / 8
 st.progress(barra_progresso)
 
@@ -354,7 +451,6 @@ elif st.session_state.step == 4:
 
     with st.container(border=True):
         col_nome, col_site, col_del = st.columns([4, 4, 1])
-        # Força alinhamento à esquerda via HTML para combinar perfeitamente com os inputs
         with col_nome: st.markdown("<p style='text-align: left; font-weight: bold;'>Nome do Concorrente / Tema</p>", unsafe_allow_html=True)
         with col_site: 
             if tipo != "Uma Narrativa / Tema de Mercado":
@@ -501,7 +597,7 @@ elif st.session_state.step == 6:
             
     for i, p in enumerate(st.session_state.lista_b):
         with st.container():
-            st.markdown(f'<div class="card-pergunta">{p}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card-pergunta"><p>{p}</p></div>', unsafe_allow_html=True)
             if st.button("Remover", key=f"rb_{i}"):
                 st.session_state.lista_b.pop(i)
                 st.rerun()
@@ -545,7 +641,7 @@ elif st.session_state.step == 7:
                 
     for i, p in enumerate(st.session_state.lista_u):
         with st.container():
-            st.markdown(f'<div class="card-pergunta">{p}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="card-pergunta"><p>{p}</p></div>', unsafe_allow_html=True)
             if st.button("Remover", key=f"ru_{i}"):
                 st.session_state.lista_u.pop(i)
                 st.rerun()
@@ -618,5 +714,4 @@ elif st.session_state.step == 9:
         </div>
     """, unsafe_allow_html=True)
     st.balloons()
-
 
