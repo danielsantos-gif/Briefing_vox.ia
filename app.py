@@ -447,7 +447,7 @@ if st.session_state.tipo_usuario == "admin":
         else:
             st.info("Nenhum briefing recebido ainda.")
             
-    with tab_m:
+   with tab_m:
         st.subheader("Inspeção Profunda e Download")
         if res_adm.data:
             opcoes_dropdown = [""] + [f"{row['nome_sujeito']} (Prot: {row['protocolo']})" for _, row in df_admin.iterrows()]
@@ -457,14 +457,28 @@ if st.session_state.tipo_usuario == "admin":
                 prot_selecionado = selecao.split(" (Prot: ")[-1].replace(")", "")
                 dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
                 
+                # Tratamento de segurança: Garante que variáveis nulas virem listas vazias
+                lista_b = dados_prot.get('prompts_branded')
+                lista_b = lista_b if isinstance(lista_b, list) else []
+                
+                lista_u = dados_prot.get('prompts_unbranded')
+                lista_u = lista_u if isinstance(lista_u, list) else []
+                
+                lista_conc = dados_prot.get('concorrentes')
+                lista_conc = lista_conc if isinstance(lista_conc, list) else []
+                
+                lista_pos = dados_prot.get('atributos_pos')
+                lista_pos = lista_pos if isinstance(lista_pos, list) else []
+                
+                lista_neg = dados_prot.get('atributos_neg')
+                lista_neg = lista_neg if isinstance(lista_neg, list) else []
+                
                 # Dividindo Gráfico e Download lado a lado
                 c_grafico, c_doc = st.columns([1.5, 1])
                 
                 with c_grafico:
                     st.markdown(f"**Análise de Volume de Prompts: {dados_prot['nome_sujeito']}**")
-                    len_b = len(dados_prot.get('prompts_branded', []))
-                    len_u = len(dados_prot.get('prompts_unbranded', []))
-                    st.bar_chart(pd.DataFrame({"Qtd de Perguntas": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
+                    st.bar_chart(pd.DataFrame({"Qtd de Perguntas": [len(lista_b), len(lista_u)]}, index=["Prompts Branded", "Prompts Mercado"]))
                 
                 with c_doc:
                     st.markdown("**Exportação Rápida**")
@@ -484,27 +498,31 @@ CONTEXTO E OBJETIVOS:
 
 CENÁRIO COMPETITIVO:
 --------------------------------------------------\n"""
-                    for c in dados_prot.get('concorrentes', []):
+                    for c in lista_conc:
                         texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
+                    
                     texto_doc += "\nATRIBUTOS DA MARCA:\n--------------------------------------------------\n"
                     texto_doc += "Atributos Positivos (Projetar):\n"
-                    for p in dados_prot.get('atributos_pos', []):
+                    for p in lista_pos:
                         texto_doc += f"- {p}\n"
+                    
                     texto_doc += "\nAtributos Negativos (Mitigar):\n"
-                    for n in dados_prot.get('atributos_neg', []):
+                    for n in lista_neg:
                         texto_doc += f"- {n}\n"
+                    
                     texto_doc += f"\nJustificativa Estratégica:\n{dados_prot.get('contexto_atributos', '')}\n"
+                    
                     texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
-                    for p in dados_prot.get('prompts_branded', []):
+                    for p in lista_b:
                         texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    
                     texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
-                    for p in dados_prot.get('prompts_unbranded', []):
+                    for p in lista_u:
                         texto_doc += f"- {p.get('Pergunta', '')}\n"
                         
                     st.download_button(f"📄 Baixar Briefing (.txt)", data=texto_doc, file_name=f"{dados_prot['nome_sujeito']}_briefing.txt", mime="text/plain", type="primary", use_container_width=True)
 
     st.stop()
-
 # ==========================================
 # BARRA LATERAL (SIDEBAR) DE PROGRESSO
 # ==========================================
