@@ -441,10 +441,17 @@ CENÁRIO COMPETITIVO:
 # ==========================================
 if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
     with st.sidebar:
-        # Logos juntas (20% menores)
-        col1, col2, col3 = st.columns([2, 1.5, 6])
-        with col1: st.image("logos nexus_negativa tagline (2).png", width=60)
-        with col2: st.image("VOXIA - Logo negativo branco.png", width=48)
+        # Carrega as imagens em base64 para a sidebar
+        img_nexus_sidebar = get_base64_image("logos nexus_negativa tagline (2).png")
+        img_voxia_sidebar = get_base64_image("VOXIA - Logo negativo branco.png")
+        
+        # Logos lado a lado usando HTML (sem colunas do Streamlit) para tamanho e alinhamento perfeitos
+        st.markdown(f"""
+<div style="display: flex; align-items: center; gap: 20px; margin-bottom: 10px; margin-top: 10px;">
+    <img src="data:image/png;base64,{img_nexus_sidebar}" width="110">
+    <img src="data:image/png;base64,{img_voxia_sidebar}" width="80">
+</div>
+""", unsafe_allow_html=True)
             
         st.markdown("<h2 style='color: #F58220; margin-top: 5px; margin-bottom: 24px; text-align: left !important; font-size: 1.8rem;'>Progresso do Briefing</h2>", unsafe_allow_html=True)
         
