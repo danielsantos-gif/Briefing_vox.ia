@@ -216,50 +216,47 @@ header { display: none !important; }
 
 /* Fundo animado dinâmico (Orbs flutuantes) */
 .splash-bg {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at center, #1a0a00 0%, #050508 100%);
-    z-index: -1; overflow: hidden;
+position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+background: radial-gradient(circle at center, #1a0a00 0%, #050508 100%);
+z-index: -1; overflow: hidden;
 }
 .orb {
-    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
-    animation: moveOrbs 15s infinite alternate ease-in-out;
+position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+animation: moveOrbs 15s infinite alternate ease-in-out;
 }
 .orb-1 { width: 45vw; height: 45vw; background: #F58220; top: -15%; left: -10%; animation-duration: 20s; }
 .orb-2 { width: 35vw; height: 35vw; background: #ff9d47; bottom: -10%; right: -5%; animation-direction: alternate-reverse; }
 
 @keyframes moveOrbs {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(15vw, 15vh) scale(1.2); }
+0% { transform: translate(0, 0) scale(1); }
+100% { transform: translate(15vw, 15vh) scale(1.2); }
 }
 </style>
 
 <div class="splash-bg">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 </div>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
     
     # Carregando as imagens em base64
     img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
     img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
     
     # --- LOGOS NO TOPO E TEXTOS CENTRALIZADOS ---
-    # Sem espaços no começo para o Markdown não transformar em bloco de código
     st.markdown(f"""
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 6vh;">
-    
-    <div style="display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
-        <img src="data:image/png;base64,{img_nexus}" width="160">
-        <img src="data:image/png;base64,{img_voxia}" width="120">
-    </div>
-
-    <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
-    <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-    <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 30px auto; line-height: 1.6;">
-        Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
-    </p>
+<div style="display: flex; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
+<img src="data:image/png;base64,{img_nexus}" width="160">
+<img src="data:image/png;base64,{img_voxia}" width="120">
 </div>
-    """, unsafe_allow_html=True)
+<h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
+<h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+<p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 30px auto; line-height: 1.6;">
+Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
+</p>
+</div>
+""", unsafe_allow_html=True)
     
     # --- BOTÃO VAMOS COMEÇAR ---
     st.markdown("<br>", unsafe_allow_html=True)
@@ -270,7 +267,6 @@ header { display: none !important; }
             st.rerun()
 
     st.stop()
-
 
 # ==========================================
 # 1. LOGIN PROFISSIONAL (PADRÃO WEB)
