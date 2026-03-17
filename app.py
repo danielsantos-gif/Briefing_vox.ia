@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import random
+import base64
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
@@ -14,10 +15,19 @@ def init_connection():
         key = st.secrets["SUPABASE_KEY"]
         return create_client(url, key)
     except Exception as e:
-        st.error("Aviso: As chaves do Supabase não foram encontradas no Secrets do Streamlit.")
+        st.error("⚠️ As chaves do Supabase não foram encontradas no Secrets do Streamlit.")
         st.stop()
 
 supabase = init_connection()
+
+# --- FUNÇÃO OTIMIZADA PARA IMAGEM DE FUNDO ---
+@st.cache_data
+def get_base64_image(file_name):
+    try:
+        with open(file_name, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except Exception:
+        return ""
 
 # --- ESTILIZAÇÃO CUSTOMIZADA (GRID DE 8 PONTOS E UX) ---
 st.markdown("""
@@ -25,13 +35,6 @@ st.markdown("""
     /* Fundo App */
     .stApp { background-color: #0a0a0f; }
     
-    /* Puxa o conteúdo mais para cima, retirando o espaço em branco */
-    .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-    }
-    header { visibility: hidden; }
-
     /* Contraste melhorado para caixas de texto (Grid 8px) */
     div[data-baseweb="input"] > div, div[data-baseweb="textarea"] > div {
         background-color: #121218 !important;
@@ -44,7 +47,7 @@ st.markdown("""
         box-shadow: 0 0 8px rgba(245, 130, 32, 0.4) !important;
     }
 
-    /* Cards de Perguntas (Grid 8px/16px) */
+    /* Cards de Perguntas */
     .card-pergunta {
         background-color: #1a1a24;
         padding: 16px;
@@ -65,7 +68,7 @@ st.markdown("""
     }
     .stButton > button[kind="primary"] {
         background-color: #F58220 !important;
-        color: #050508 !important; /* Texto escuro para contraste máximo */
+        color: #050508 !important; 
         border: none !important;
     }
     .stButton > button[kind="primary"]:hover {
@@ -73,30 +76,19 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Fundo Animado Tech/Orgânico (Aurora Laranja) */
+    /* Fundo Animado Tech/Orgânico (Apenas Splash Screen) */
     .splash-bg {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #050508;
-        background-image: 
-            radial-gradient(circle at 15% 50%, rgba(245, 130, 32, 0.15), transparent 25%),
-            radial-gradient(circle at 85% 30%, rgba(245, 130, 32, 0.1), transparent 25%);
-        animation: pulseAurora 8s alternate infinite ease-in-out;
+        background: linear-gradient(-45deg, #000000, #1a0a00, #2b1100, #0a0a0f);
+        background-size: 400% 400%;
+        animation: gradientMove 15s ease infinite;
         z-index: -1;
     }
-    @keyframes pulseAurora {
-        0% { background-position: 0% 0%; opacity: 0.8; }
-        100% { background-position: 100% 100%; opacity: 1; }
-    }
-    
-    /* Oculta scrollbar na Splash Screen e maximiza espaço */
-    .splash-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-        text-align: center;
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     /* Sidebar Styling */
@@ -140,6 +132,12 @@ st.markdown("""
     @keyframes popIn {
         0% { transform: scale(0); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Remove padding na tela inicial */
+    .no-scroll-container .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 0 !important;
     }
     
     /* Animação Checkmark Final */
@@ -192,15 +190,15 @@ if "errata" in st.query_params:
     st.warning(f"Ajuste os prompts para: {dados_banco['nome_sujeito']}. O novo envio substituirá o antigo.")
     
     st.subheader("Perguntas Branded")
-    branded_ed = st.data_editor(pd.DataFrame(dados_banco['prompts_branded']), use_container_width=True, num_rows="dynamic", key="err_b")
+    branded_ed = st.data_editor(pd.DataFrame(dados_banco.get('prompts_branded', [])), use_container_width=True, num_rows="dynamic", key="err_b")
     st.subheader("Perguntas de Mercado (Unbranded)")
-    unbranded_ed = st.data_editor(pd.DataFrame(dados_banco['prompts_unbranded']), use_container_width=True, num_rows="dynamic", key="err_u")
+    unbranded_ed = st.data_editor(pd.DataFrame(dados_banco.get('prompts_unbranded', [])), use_container_width=True, num_rows="dynamic", key="err_u")
     
     if st.button("Salvar e Reenviar", type="primary"):
         supabase.table("briefings").update({
             "prompts_branded": branded_ed.to_dict('records'),
             "prompts_unbranded": unbranded_ed.to_dict('records'),
-            "status": "Corrigido"
+            "status": "Em ajuste"
         }).eq("protocolo", id_prot).execute()
         st.success("Briefing atualizado com sucesso!")
     st.stop()
@@ -213,33 +211,32 @@ if not st.session_state.intro_viewed:
     st.markdown('<style>.stApp { background: transparent !important; }</style>', unsafe_allow_html=True)
     
     st.markdown("""
-    <div class="splash-container">
-        <h1 style="color: #F58220; font-size: 4rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
-        <h2 style="font-size: 2.5rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-        <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 16px auto 32px auto; line-height: 1.6;">
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 85vh; text-align: center;">
+        <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
+        <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+        <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 40px auto; line-height: 1.6;">
             Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
         </p>
     """, unsafe_allow_html=True)
     
-    # Botão Centralizado
     _, col_btn, _ = st.columns([3, 2, 3])
     with col_btn:
-        if st.button("Vamos começar →", type="primary", use_container_width=True):
+        if st.button("Vamos começar", type="primary", use_container_width=True):
             st.session_state.intro_viewed = True
             st.rerun()
             
-    # Logos Centralizadas, menores e mais próximas ao botão
-    st.markdown("<br>", unsafe_allow_html=True)
-    _, c_l1, c_l2, _ = st.columns([4.2, 0.8, 0.8, 4.2])
-    with c_l1:
-        try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col_l1, col_l2, _ = st.columns([1.5, 1.5, 9])
+    with col_l1:
+        try: st.image("logos nexus_negativa tagline (2).png", width=75)
         except: pass
-    with c_l2:
-        try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
+    with col_l2:
+        try: st.image("VOXIA - Logo negativo branco.png", width=60)
         except: pass
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
+
 
 # ==========================================
 # 1. LOGIN PROFISSIONAL (PADRÃO WEB)
@@ -284,58 +281,59 @@ if not st.session_state.acesso_liberado:
 # PAINEL ADMIN (DASHBOARD APRIMORADO)
 # ==========================================
 if st.session_state.tipo_usuario == "admin":
-    st.title("Dashboard Estratégico")
-    tab_g, tab_m = st.tabs(["Gestão e Detalhes", "Análise Macro"])
+    st.title("Dashboard Estratégico - Gestão de Briefings")
+    tab_g, tab_m = st.tabs(["Gestão e Tabela de Status", "Inspeção Profunda e Download"])
     
     with tab_g:
+        # Busca os dados no banco
         res_adm = supabase.table("briefings").select("*").order("id", desc=True).execute()
         if res_adm.data:
             df_admin = pd.DataFrame(res_adm.data)
-            st.dataframe(df_admin[['protocolo', 'data_envio', 'nome_sujeito', 'status']], use_container_width=True)
             
-            st.divider()
-            st.markdown("### Inspeção Profunda e Download")
-            protocolos = df_admin['protocolo'].tolist()
-            prot_selecionado = st.selectbox("Selecione um protocolo para ver detalhes e exportar:", [""] + protocolos)
+            # Se a coluna 'responsavel' não existir no banco antigo, cria no DataFrame temporário
+            if 'responsavel' not in df_admin.columns:
+                df_admin['responsavel'] = ""
+                
+            df_edit = df_admin[['id', 'data_envio', 'nome_sujeito', 'status', 'responsavel', 'protocolo']].copy()
+            df_edit['data_envio'] = pd.to_datetime(df_edit['data_envio']).dt.strftime('%d/%m/%Y')
             
-            if prot_selecionado:
-                dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
-                
-                # Gráficos Dinâmicos
-                st.markdown(f"**Análise de Preenchimento: {dados_prot['nome_sujeito']}**")
-                c_graf1, c_graf2 = st.columns(2)
-                
-                len_b = len(dados_prot.get('prompts_branded', []))
-                len_u = len(dados_prot.get('prompts_unbranded', []))
-                c_graf1.bar_chart(pd.DataFrame({"Qtd": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
-                
-                # Formatando Texto para Download (.txt / compatível com Word)
-                texto_doc = f"""DIAGNÓSTICO VOX.IA - BRIEFING COMPLETO
-==================================================
-Protocolo: {dados_prot['protocolo']}
-Sujeito Analisado: {dados_prot['nome_sujeito']}
-Tipo: {dados_prot['tipo_analise']}
-Status: {dados_prot['status']}
-
-CONTEXTO E OBJETIVOS:
---------------------------------------------------
-{dados_prot['descricao']}
-
-CENÁRIO COMPETITIVO:
---------------------------------------------------
-"""
-                for c in dados_prot.get('concorrentes', []):
-                    texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
-                
-                texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
-                for p in dados_prot.get('prompts_branded', []):
-                    texto_doc += f"- {p.get('Pergunta', '')}\n"
-                    
-                texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
-                for p in dados_prot.get('prompts_unbranded', []):
-                    texto_doc += f"- {p.get('Pergunta', '')}\n"
-                    
-                st.download_button("Baixar Resumo do Briefing (.txt)", data=texto_doc, file_name=f"{dados_prot['protocolo']}_briefing.txt", mime="text/plain", type="primary")
+            st.markdown("### Controle de Etapas e Responsáveis")
+            st.caption("Edite o status ou o responsável diretamente na tabela e clique em Salvar.")
+            
+            # Tabela Editável com Tags Coloridas (SelectboxColumn)
+            edited_df = st.data_editor(
+                df_edit,
+                column_config={
+                    "status": st.column_config.SelectboxColumn(
+                        "Progresso",
+                        options=["Novo", "Briefing aprovado", "Cadastro na plataforma feito", "Em produção", "Produção finalizada", "Apresentação agendada", "Concluído", "Em ajuste"],
+                        required=True
+                    ),
+                    "responsavel": st.column_config.TextColumn("Responsável", help="Nome da pessoa responsável"),
+                    "id": None, # Oculta o ID interno
+                    "protocolo": st.column_config.TextColumn("Protocolo", disabled=True),
+                    "data_envio": st.column_config.TextColumn("Data", disabled=True),
+                    "nome_sujeito": st.column_config.TextColumn("Cliente/Sujeito", disabled=True)
+                },
+                use_container_width=True,
+                hide_index=True,
+                key="tabela_admin"
+            )
+            
+            # Botão para salvar alterações na tabela
+            if st.button("💾 Salvar Alterações na Tabela", type="primary"):
+                for index, row in edited_df.iterrows():
+                    orig_row = df_edit.iloc[index]
+                    if row['status'] != orig_row['status'] or row['responsavel'] != orig_row['responsavel']:
+                        try:
+                            supabase.table("briefings").update({
+                                "status": row['status'],
+                                "responsavel": row['responsavel']
+                            }).eq("id", row['id']).execute()
+                        except Exception as e:
+                            st.error("Erro ao salvar responsável. Certifique-se de que a coluna 'responsavel' existe no Supabase.")
+                st.success("Tabela atualizada com sucesso!")
+                st.rerun()
                 
             st.divider()
             st.text_input("Gerar Link de Errata para Protocolo:", key="gen_err")
@@ -345,12 +343,62 @@ CENÁRIO COMPETITIVO:
             st.info("Nenhum briefing recebido ainda.")
             
     with tab_m:
-        st.subheader("Indicadores-Chave")
-        c1, c2 = st.columns(2)
-        c1.metric("Total de Briefings", len(res_adm.data) if res_adm.data else 0)
-        c2.metric("Taxa de Errata", "15%")
-        st.bar_chart(pd.DataFrame({"Volume": [10, 20, 15]}, index=["Marca", "Porta-voz", "Narrativa"]))
-    
+        st.subheader("Inspeção Profunda e Download")
+        if res_adm.data:
+            # Lista suspensa baseada no NOME DO SUJEITO (com protocolo entre parênteses para evitar nomes iguais)
+            opcoes_dropdown = [""] + [f"{row['nome_sujeito']} (Prot: {row['protocolo']})" for _, row in df_admin.iterrows()]
+            selecao = st.selectbox("Selecione um cliente para ver detalhes e exportar:", opcoes_dropdown)
+            
+            if selecao:
+                prot_selecionado = selecao.split(" (Prot: ")[-1].replace(")", "")
+                dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
+                
+                # Gráficos Dinâmicos
+                st.markdown(f"**Análise de Volume de Prompts: {dados_prot['nome_sujeito']}**")
+                len_b = len(dados_prot.get('prompts_branded', []))
+                len_u = len(dados_prot.get('prompts_unbranded', []))
+                st.bar_chart(pd.DataFrame({"Qtd de Perguntas": [len_b, len_u]}, index=["Prompts Branded", "Prompts Mercado"]))
+                
+                # Formatando Texto para Download (.txt / compatível com Word) com Atributos Incluídos
+                texto_doc = f"""DIAGNÓSTICO VOX.IA - BRIEFING COMPLETO
+==================================================
+Sujeito Analisado: {dados_prot['nome_sujeito']}
+Protocolo: {dados_prot['protocolo']}
+Tipo: {dados_prot['tipo_analise']}
+Status: {dados_prot['status']}
+Responsável: {dados_prot.get('responsavel', 'Não atribuído')}
+
+CONTEXTO E OBJETIVOS:
+--------------------------------------------------
+{dados_prot.get('descricao', '')}
+
+CENÁRIO COMPETITIVO:
+--------------------------------------------------
+"""
+                for c in dados_prot.get('concorrentes', []):
+                    texto_doc += f"- {c.get('nome', '')} ({c.get('site', '')})\n"
+                
+                texto_doc += "\nATRIBUTOS DA MARCA:\n--------------------------------------------------\n"
+                texto_doc += "Atributos Positivos (Projetar):\n"
+                for p in dados_prot.get('atributos_pos', []):
+                    texto_doc += f"- {p}\n"
+                    
+                texto_doc += "\nAtributos Negativos (Mitigar):\n"
+                for n in dados_prot.get('atributos_neg', []):
+                    texto_doc += f"- {n}\n"
+                    
+                texto_doc += f"\nJustificativa Estratégica:\n{dados_prot.get('contexto_atributos', '')}\n"
+
+                texto_doc += "\nPROMPTS INSTITUCIONAIS (BRANDED):\n--------------------------------------------------\n"
+                for p in dados_prot.get('prompts_branded', []):
+                    texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    
+                texto_doc += "\nPROMPTS DE MERCADO (UNBRANDED):\n--------------------------------------------------\n"
+                for p in dados_prot.get('prompts_unbranded', []):
+                    texto_doc += f"- {p.get('Pergunta', '')}\n"
+                    
+                st.download_button(f"Baixar Briefing de {dados_prot['nome_sujeito']} (.txt)", data=texto_doc, file_name=f"{dados_prot['nome_sujeito']}_briefing.txt", mime="text/plain", type="primary")
+
     if st.button("Sair"):
         st.session_state.clear()
         st.rerun()
@@ -361,16 +409,12 @@ CENÁRIO COMPETITIVO:
 # ==========================================
 if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
     with st.sidebar:
-        # Logos juntas no topo da sidebar
-        c_logo_s1, c_logo_s2 = st.columns(2)
-        with c_logo_s1:
-            try: st.image("logos nexus_negativa tagline (2).png", use_container_width=True)
-            except: pass
-        with c_logo_s2:
-            try: st.image("VOXIA - Logo negativo branco.png", use_container_width=True)
-            except: pass
+        # Logos juntas (20% menores)
+        col1, col2, col3 = st.columns([2, 1.5, 6])
+        with col1: st.image("logos nexus_negativa tagline (2).png", width=60)
+        with col2: st.image("VOXIA - Logo negativo branco.png", width=48)
             
-        st.markdown("<h3 style='color: #F58220; margin-top: 16px; margin-bottom: 24px; text-align: left !important;'>Diagnóstico vox.ia</h3>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color: #F58220; margin-top: 5px; margin-bottom: 24px; text-align: left !important; font-size: 1.8rem;'>Progresso do Briefing</h2>", unsafe_allow_html=True)
         
         etapas = [
             "Contexto da Análise",
@@ -501,7 +545,7 @@ elif st.session_state.step == 4:
                 st.rerun()
 
         if len(st.session_state.lista_conc) < 10:
-            if st.button("+ Adicionar Concorrente"):
+            if st.button("Adicionar Concorrente"):
                 st.session_state.lista_conc.append({"nome": "", "site": ""})
                 st.rerun()
 
@@ -542,7 +586,7 @@ elif st.session_state.step == 5:
                 st.session_state.lista_pos.pop(i)
                 st.rerun()
         if len(st.session_state.lista_pos) < 10:
-            if st.button("+ Adicionar Positivos"):
+            if st.button("Adicionar Positivos"):
                 st.session_state.lista_pos.append("")
                 st.rerun()
                 
@@ -556,7 +600,7 @@ elif st.session_state.step == 5:
                 st.session_state.lista_neg.pop(i)
                 st.rerun()
         if len(st.session_state.lista_neg) < 10:
-            if st.button("+ Adicionar Negativos"):
+            if st.button("Adicionar Negativos"):
                 st.session_state.lista_neg.append("")
                 st.rerun()
 
@@ -602,7 +646,7 @@ elif st.session_state.step == 6:
 
     with st.container(border=True):
         new_b = st.text_input("Nova pergunta (Aperte Enter para adicionar):", key="input_b", placeholder=f"Ex: A {marca_parametro} é recomendada para projetos...?")
-        if st.button("+ Adicionar Pergunta Branded") or new_b:
+        if st.button("Adicionar Pergunta Branded") or new_b:
             if new_b.strip():
                 if marca_parametro.lower() not in new_b.lower():
                     st.error(f"Ação Barrada: O termo '{marca_parametro}' precisa obrigatoriamente constar na sua pergunta.")
@@ -645,7 +689,7 @@ elif st.session_state.step == 7:
 
     with st.container(border=True):
         new_u = st.text_input("Nova pergunta de mercado (Aperte Enter):", key="input_u", placeholder="Ex: Qual a melhor empresa de [Setor] no Brasil?")
-        if st.button("+ Adicionar Pergunta de Mercado") or new_u:
+        if st.button("Adicionar Pergunta de Mercado") or new_u:
             if new_u.strip():
                 if marca_parametro.lower() in new_u.lower():
                     st.error(f"Ação Barrada: Remova o termo '{marca_parametro}'. O objetivo aqui é avaliar a recomendação orgânica sem citar a marca.")
@@ -707,6 +751,9 @@ elif st.session_state.step == 8:
                 "nome_sujeito": st.session_state.dados['empresa'],
                 "tipo_analise": st.session_state.dados['tipo_analise'],
                 "concorrentes": st.session_state.lista_conc,
+                "atributos_pos": st.session_state.lista_pos,
+                "atributos_neg": st.session_state.lista_neg,
+                "contexto_atributos": st.session_state.dados['justificativa'],
                 "prompts_branded": [{"Pergunta": p} for p in st.session_state.lista_b],
                 "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.lista_u],
                 "descricao": descricao_completa,
