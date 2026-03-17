@@ -243,13 +243,13 @@ animation: moveOrbs 15s infinite alternate ease-in-out;
     img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
     img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
     
-    # --- LOGOS EMPILHADAS E TEXTOS CENTRALIZADOS ---
+    # --- LOGOS LADO A LADO E TEXTOS CENTRALIZADOS ---
     st.markdown(f"""
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 4vh;">
+<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 6vh;">
 
-<div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px;">
-<img src="data:image/png;base64,{img_voxia}" width="150">
-<img src="data:image/png;base64,{img_nexus}" width="130">
+<div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
+<img src="data:image/png;base64,{img_nexus}" width="160">
+<img src="data:image/png;base64,{img_voxia}" width="120">
 </div>
 
 <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
