@@ -964,44 +964,40 @@ elif st.session_state.step == 9:
 
 # --- PASSO 10: SUCESSO (REDIRECIONAMENTO ROBUSTO) ---
 elif st.session_state.step == 10:
-    # URL de destino
     url_destino = "https://nexus.fsb.com.br/"
 
-    # HTML/JS para redirecionamento automático
+    # Renderizando o HTML e o Script de redirecionamento
     st.markdown(f"""
-        <script>
-            // Função para redirecionar
-            function redirect() {{
-                window.top.location.href = "{url_destino}";
-            }}
-            // Tenta redirecionar após 5 segundos
-            setTimeout(redirect, 5000);
-        </script>
-        
-        <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column; text-align:center;">
-            <svg class="success-checkmark" style="overflow: visible; width: 80px; height: 80px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark_circle" cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="2"/>
-                <path class="checkmark_check" fill="none" stroke="#4CAF50" stroke-width="2" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
-            
-            <h1 style="margin-top: 30px; font-size: 2.5rem; color: #fff;">Briefing Enviado!</h1>
-            <p style="color: #ccc; font-size: 1.1rem; max-width: 500px;">
-                Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
-            </p>
-            
-            <div style="margin-top: 20px; padding: 10px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
-                <p style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">Não foi redirecionado automaticamente?</p>
-                <a href="{url_destino}" target="_self" style="text-decoration: none;">
-                    <button style="background-color: #F58220; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                        Clique aqui para acessar o site
-                    </button>
-                </a>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+<script>
+    setTimeout(function() {{
+        window.top.location.href = "{url_destino}";
+    }}, 5000);
+</script>
+
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 60vh;">
+    <svg style="width: 80px; height: 80px; overflow: visible;" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="3" style="stroke-dasharray: 166; stroke-dashoffset: 166; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;" />
+        <path fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" style="stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;" />
+    </svg>
+    
+    <h1 style="color: white; font-size: 2.5rem; margin-top: 20px;">Briefing Enviado!</h1>
+    <p style="color: #ccc; font-size: 1.2rem; max-width: 500px; margin-bottom: 30px;">
+        Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
+    </p>
+
+    <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
+        <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">Não foi redirecionado automaticamente?</p>
+        <a href="{url_destino}" target="_top" style="text-decoration: none;">
+            <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;">
+                Clique aqui para voltar ao site
+            </button>
+        </a>
+    </div>
+</div>
+
+<style>
+    @keyframes stroke {{ 100% {{ stroke-dashoffset: 0; }} }}
+</style>
+""", unsafe_allow_html=True)
     
     st.balloons()
-    
-    # Botão nativo do Streamlit como garantia extra (fica visível abaixo do HTML)
-    if st.button("Voltar para o site agora"):
-        st.markdown(f'<meta http-equiv="refresh" content="0;URL=\'{url_destino}\'">', unsafe_allow_html=True)
