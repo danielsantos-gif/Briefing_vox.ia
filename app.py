@@ -3,6 +3,7 @@ import pandas as pd
 import random
 import base64
 import datetime
+import streamlit.components.v1 as components
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
@@ -962,42 +963,41 @@ elif st.session_state.step == 9:
             st.session_state.step = 10
             st.rerun()
 
-# --- PASSO 10: SUCESSO (REDIRECIONAMENTO ROBUSTO) ---
+# --- PASSO 10: SUCESSO (REDIRECIONAMENTO DEFINITIVO) ---
 elif st.session_state.step == 10:
     url_destino = "https://nexus.fsb.com.br/"
 
-    # Renderizando o HTML e o Script de redirecionamento
-    st.markdown(f"""
-<script>
-    setTimeout(function() {{
-        window.top.location.href = "{url_destino}";
-    }}, 5000);
-</script>
+    # HTML e JavaScript isolados em um componente real
+    html_code = f"""
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: sans-serif; background-color: #0a0a0f; color: white; height: 100vh;">
+        <svg style="width: 80px; height: 80px; overflow: visible;" viewBox="0 0 52 52">
+            <circle cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="3" />
+            <path fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+        </svg>
+        
+        <h1 style="font-size: 2.2rem; margin-top: 20px;">Briefing Enviado!</h1>
+        <p style="color: #ccc; font-size: 1.1rem; max-width: 400px; margin-bottom: 30px;">
+            Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
+        </p>
 
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 60vh;">
-    <svg style="width: 80px; height: 80px; overflow: visible;" viewBox="0 0 52 52">
-        <circle cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="3" style="stroke-dasharray: 166; stroke-dashoffset: 166; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;" />
-        <path fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" style="stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;" />
-    </svg>
-    
-    <h1 style="color: white; font-size: 2.5rem; margin-top: 20px;">Briefing Enviado!</h1>
-    <p style="color: #ccc; font-size: 1.2rem; max-width: 500px; margin-bottom: 30px;">
-        Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
-    </p>
-
-    <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
-        <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">Não foi redirecionado automaticamente?</p>
-        <a href="{url_destino}" target="_top" style="text-decoration: none;">
-            <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;">
-                Clique aqui para voltar ao site
-            </button>
-        </a>
+        <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
+            <p style="color: #888; font-size: 0.8rem; margin-bottom: 12px;">Não foi redirecionado automaticamente?</p>
+            <a href="{url_destino}" target="_top" style="text-decoration: none;">
+                <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
+                    Clique aqui para voltar ao site
+                </button>
+            </a>
+        </div>
     </div>
-</div>
 
-<style>
-    @keyframes stroke {{ 100% {{ stroke-dashoffset: 0; }} }}
-</style>
-""", unsafe_allow_html=True)
+    <script>
+        setTimeout(function() {{
+            window.top.location.href = "{url_destino}";
+        }}, 4000);
+    </script>
+    """
+    
+    # Executa o componente HTML (ajustamos a altura para cobrir a tela)
+    components.html(html_code, height=600)
     
     st.balloons()
