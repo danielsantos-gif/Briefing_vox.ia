@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import random
 import base64
-import datetime # Adicione este import no topo do seu arquivo, junto aos outros
+import datetime
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
@@ -77,21 +77,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Fundo Animado Tech/Orgânico (Apenas Splash Screen) */
-    .splash-bg {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: linear-gradient(-45deg, #000000, #1a0a00, #2b1100, #0a0a0f);
-        background-size: 400% 400%;
-        animation: gradientMove 15s ease infinite;
-        z-index: -1;
-    }
-    @keyframes gradientMove {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
     /* Sidebar Styling */
     [data-testid="stSidebar"] {
         background-color: #0d0d14;
@@ -147,7 +132,7 @@ st.markdown("""
     .checkmark_check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; stroke-width: 4; stroke-linecap: round; stroke: #4CAF50; fill: none; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards; }
     @keyframes stroke { 100% { stroke-dashoffset: 0; } }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- CONTROLE DE NAVEGAÇÃO E COFRE DE MEMÓRIA ---
 if 'intro_viewed' not in st.session_state: st.session_state.intro_viewed = False
@@ -208,7 +193,6 @@ if "errata" in st.query_params:
 # 0. TELA DE INTRODUÇÃO (SPLASH SCREEN)
 # ==========================================
 if not st.session_state.intro_viewed:
-    # Injetando estilo da animação dinâmica e o BOTÃO MAIOR
     st.markdown("""
 <style>
 .stApp { background: transparent !important; }
@@ -217,59 +201,54 @@ header { display: none !important; }
 
 /* Deixa o botão da capa maior e mais chamativo */
 .stButton > button {
-height: 64px !important;
-font-size: 20px !important;
-border-radius: 12px !important;
-font-weight: bold !important;
+    height: 64px !important;
+    font-size: 20px !important;
+    border-radius: 12px !important;
+    font-weight: bold !important;
 }
 
 /* Fundo animado dinâmico (Orbs flutuantes) */
 .splash-bg {
-position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-background: radial-gradient(circle at center, #1a0a00 0%, #050508 100%);
-z-index: -1; overflow: hidden;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, #1a0a00 0%, #050508 100%);
+    z-index: -1; overflow: hidden;
 }
 .orb {
-position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
-animation: moveOrbs 15s infinite alternate ease-in-out;
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6;
+    animation: moveOrbs 15s infinite alternate ease-in-out;
 }
 .orb-1 { width: 45vw; height: 45vw; background: #F58220; top: -15%; left: -10%; animation-duration: 20s; }
 .orb-2 { width: 35vw; height: 35vw; background: #ff9d47; bottom: -10%; right: -5%; animation-direction: alternate-reverse; }
 
 @keyframes moveOrbs {
-0% { transform: translate(0, 0) scale(1); }
-100% { transform: translate(15vw, 15vh) scale(1.2); }
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(15vw, 15vh) scale(1.2); }
 }
 </style>
 
 <div class="splash-bg">
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 </div>
 """, unsafe_allow_html=True)
     
-    # Carregando as imagens em base64
     img_nexus = get_base64_image("logos nexus_negativa tagline (2).png")
     img_voxia = get_base64_image("VOXIA - Logo negativo branco.png")
     
-    # --- LOGOS E TEXTOS EMPURRADOS PARA O CENTRO DA TELA (margin-top: 16vh) ---
     st.markdown(f"""
 <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 16vh;">
-
-<div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
-<img src="data:image/png;base64,{img_nexus}" width="160">
-<img src="data:image/png;base64,{img_voxia}" width="120">
-</div>
-
-<h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
-<h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
-<p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 35px auto; line-height: 1.6;">
-Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
-</p>
+    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin-bottom: 25px;">
+        <img src="data:image/png;base64,{img_nexus}" width="160">
+        <img src="data:image/png;base64,{img_voxia}" width="120">
+    </div>
+    <h1 style="color: #F58220; font-size: 4.5rem; margin-bottom: 0; font-weight: 900;">Briefing para vox.ia</h1>
+    <h2 style="font-size: 2.8rem; margin-top: 8px; color: #fff; font-weight: 700;">Reputação e Presença de Marca<br>na Inteligência Artificial.</h2>
+    <p style="font-size: 1.2rem; color: #ccc; max-width: 750px; margin: 24px auto 35px auto; line-height: 1.6;">
+        Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativa. A precisão dos dados a seguir é fundamental para treinarmos nossos modelos de análise e garantir um relatório fiel à sua realidade.
+    </p>
 </div>
 """, unsafe_allow_html=True)
     
-    # --- BOTÃO VAMOS COMEÇAR (Mais largo nas colunas) ---
     _, col_btn, _ = st.columns([2.5, 3, 2.5])
     with col_btn:
         if st.button("Vamos começar", type="primary", use_container_width=True):
@@ -277,6 +256,7 @@ Este diagnóstico mapeia a presença da sua marca no ecossistema de IA Generativ
             st.rerun()
 
     st.stop()
+
 
 # ==========================================
 # 1. LOGIN PROFISSIONAL (PADRÃO WEB)
@@ -321,7 +301,6 @@ if not st.session_state.acesso_liberado:
 # PAINEL ADMIN (DASHBOARD APRIMORADO)
 # ==========================================
 if st.session_state.tipo_usuario == "admin":
-    # Cabeçalho com botão de Sair alinhado à direita
     c_title, c_btn = st.columns([8, 2])
     with c_title:
         st.title("⚙️ Dashboard Estratégico")
@@ -337,18 +316,15 @@ if st.session_state.tipo_usuario == "admin":
     tab_g, tab_m = st.tabs(["📊 Gestão de Status e Tabela", "🔎 Inspeção e Download"])
     
     with tab_g:
-        # Busca os dados no banco
         res_adm = supabase.table("briefings").select("*").order("id", desc=True).execute()
         if res_adm.data:
             df_admin = pd.DataFrame(res_adm.data)
             
-            # Se as colunas não existirem no banco antigo, cria no DataFrame temporário
             if 'responsavel' not in df_admin.columns: df_admin['responsavel'] = ""
             if 'data_apresentacao' not in df_admin.columns: df_admin['data_apresentacao'] = ""
                 
             df_display = df_admin[['id', 'data_envio', 'protocolo', 'nome_sujeito', 'status', 'responsavel', 'data_apresentacao']].copy()
             
-            # Formatação segura da data de envio
             try:
                 df_display['data_envio'] = pd.to_datetime(df_display['data_envio']).dt.strftime('%d/%m/%Y')
             except:
@@ -358,11 +334,10 @@ if st.session_state.tipo_usuario == "admin":
                 st.subheader("📋 Visão Geral dos Briefings")
                 st.caption("Acompanhe o andamento de todos os protocolos gerados pelos clientes.")
                 
-                # Tabela de Apenas Leitura (st.dataframe em vez de data_editor)
                 st.dataframe(
                     df_display,
                     column_config={
-                        "id": None, # Oculta o ID interno
+                        "id": None,
                         "data_envio": st.column_config.TextColumn("Data", width="small"),
                         "protocolo": st.column_config.TextColumn("Protocolo", width="small"),
                         "nome_sujeito": st.column_config.TextColumn("Cliente / Sujeito", width="medium"),
@@ -376,16 +351,13 @@ if st.session_state.tipo_usuario == "admin":
             
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # Blocos de Ações divididos lado a lado
             col_edit, col_errata = st.columns(2)
             
-            # --- NOVO FLUXO DE EDIÇÃO INTUITIVO ---
             with col_edit:
                 with st.container(border=True):
                     st.markdown("**✏️ Atualizar Status e Agendamento**")
                     st.caption("Selecione um cliente para editar suas informações.")
                     
-                    # Lista dropdown para selecionar o projeto
                     opcoes_proj = [""] + list(df_admin['protocolo'].astype(str) + " - " + df_admin['nome_sujeito'].astype(str))
                     proj_selecionado = st.selectbox("Selecione o Projeto:", opcoes_proj)
                     
@@ -393,7 +365,6 @@ if st.session_state.tipo_usuario == "admin":
                         prot_selec = proj_selecionado.split(" - ")[0]
                         dados_proj = df_admin[df_admin['protocolo'] == prot_selec].iloc[0]
                         
-                        # Resgata dados atuais
                         status_atual = dados_proj.get('status', 'Novo')
                         resp_atual = dados_proj.get('responsavel', '')
                         data_atual_str = dados_proj.get('data_apresentacao', '')
@@ -403,13 +374,11 @@ if st.session_state.tipo_usuario == "admin":
                         
                         novo_status = st.selectbox("Atualizar Progresso:", lista_status, index=idx_status)
                         
-                        # Trata a data atual para exibir no calendário do Streamlit
                         data_obj = None
                         if pd.notna(data_atual_str) and data_atual_str.strip() != "":
                             try:
                                 data_obj = datetime.datetime.strptime(data_atual_str, "%d/%m/%Y").date()
-                            except:
-                                pass
+                            except: pass
                                 
                         c1, c2 = st.columns(2)
                         novo_resp = c1.text_input("Responsável:", value=resp_atual if pd.notna(resp_atual) else "")
@@ -418,7 +387,6 @@ if st.session_state.tipo_usuario == "admin":
                         st.markdown("<br>", unsafe_allow_html=True)
                         if st.button("💾 Salvar Alterações", type="primary", use_container_width=True):
                             nova_data_str = nova_data.strftime("%d/%m/%Y") if nova_data else ""
-                            
                             with st.spinner("Salvando no Supabase..."):
                                 try:
                                     supabase.table("briefings").update({
@@ -429,7 +397,7 @@ if st.session_state.tipo_usuario == "admin":
                                     st.success("Briefing atualizado com sucesso!")
                                     st.rerun()
                                 except Exception as e:
-                                    st.error("Erro ao salvar! Certifique-se de ter criado a coluna 'data_apresentacao' no Supabase.")
+                                    st.error("Erro ao salvar! Verifique a coluna 'data_apresentacao' no Supabase.")
 
             with col_errata:
                 with st.container(border=True):
@@ -447,7 +415,7 @@ if st.session_state.tipo_usuario == "admin":
         else:
             st.info("Nenhum briefing recebido ainda.")
             
-            with tab_m:
+    with tab_m:
         st.subheader("Inspeção Profunda e Download")
         if res_adm.data:
             opcoes_dropdown = [""] + [f"{row['nome_sujeito']} (Prot: {row['protocolo']})" for _, row in df_admin.iterrows()]
@@ -457,7 +425,7 @@ if st.session_state.tipo_usuario == "admin":
                 prot_selecionado = selecao.split(" (Prot: ")[-1].replace(")", "")
                 dados_prot = df_admin[df_admin['protocolo'] == prot_selecionado].iloc[0]
                 
-                # Tratamento de segurança: Garante que variáveis nulas virem listas vazias
+                # Tratamento de segurança contra Nulos (None)
                 lista_b = dados_prot.get('prompts_branded')
                 lista_b = lista_b if isinstance(lista_b, list) else []
                 
@@ -473,7 +441,6 @@ if st.session_state.tipo_usuario == "admin":
                 lista_neg = dados_prot.get('atributos_neg')
                 lista_neg = lista_neg if isinstance(lista_neg, list) else []
                 
-                # Dividindo Gráfico e Download lado a lado
                 c_grafico, c_doc = st.columns([1.5, 1])
                 
                 with c_grafico:
@@ -529,16 +496,14 @@ CENÁRIO COMPETITIVO:
 # ==========================================
 if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
     with st.sidebar:
-        # Carrega as imagens em base64 para a sidebar
         img_nexus_sidebar = get_base64_image("logos nexus_negativa tagline (2).png")
         img_voxia_sidebar = get_base64_image("VOXIA - Logo negativo branco.png")
         
-        # Logos centralizadas (justify-content: center), lado a lado, com divisor vertical
         st.markdown(f"""
-<div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 20px; margin-top: 5px; padding-bottom: 20px; border-bottom: 1px solid #2a2a3a;">
-<img src="data:image/png;base64,{img_nexus_sidebar}" width="90">
-<div style="width: 1px; height: 28px; background-color: #3a3a4a;"></div>
-<img src="data:image/png;base64,{img_voxia_sidebar}" width="70">
+<div style="display: flex; justify-content: flex-start; align-items: center; gap: 16px; margin-bottom: 20px; margin-top: 5px; padding-bottom: 20px; border-bottom: 1px solid #2a2a3a;">
+    <img src="data:image/png;base64,{img_nexus_sidebar}" width="90">
+    <div style="width: 1px; height: 28px; background-color: #3a3a4a;"></div>
+    <img src="data:image/png;base64,{img_voxia_sidebar}" width="70">
 </div>
 """, unsafe_allow_html=True)
             
@@ -907,4 +872,3 @@ elif st.session_state.step == 9:
         </div>
     """, unsafe_allow_html=True)
     st.balloons()
-
