@@ -6,10 +6,9 @@ import datetime
 from supabase import create_client
 
 # --- CONFIGURAÇÃO INICIAL ---
-# Substitua pelo nome exato do arquivo da logo que você já tem na pasta
 st.set_page_config(
     page_title="Briefing | Vox.ia", 
-    page_icon="VOXIA - Logo negativo branco.png", 
+    page_icon="🎯", # O alvo preenche melhor o quadrado da aba que a bolinha
     layout="wide"
 )
 
