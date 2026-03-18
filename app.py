@@ -102,11 +102,35 @@ st.markdown("""
     
     /* Ícones da Sidebar */
     .circle-check {
+        position: relative; /* Necessário para ancorar os confetes */
         min-width: 24px; height: 24px; border: 2px solid #4CAF50; border-radius: 50%;
         display: flex; justify-content: center; align-items: center; 
         color: #4CAF50; margin-right: 12px; font-weight: bold; font-size: 14px;
         animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
+    
+    /* Animação do Mini Foguete/Confete de Sucesso */
+    .circle-check::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 4px; height: 4px;
+        border-radius: 50%;
+        opacity: 0;
+        /* Cria as partículas em volta da bolinha (Laranja, Verde e Branco) */
+        box-shadow: 
+            12px -12px 0 0 #F58220, 
+            -12px -12px 0 0 #4CAF50, 
+            12px 12px 0 0 #ffffff, 
+            -12px 12px 0 0 #F58220, 
+            0px -18px 0 0 #4CAF50, 
+            0px 18px 0 0 #ffffff, 
+            18px 0px 0 0 #F58220, 
+            -18px 0px 0 0 #4CAF50;
+        animation: spark 0.6s ease-out forwards;
+        animation-delay: 0.15s; /* Explode logo que o ícone aparece */
+    }
+
     .circle-dotted {
         min-width: 24px; height: 24px; border: 2px dotted #F58220; border-radius: 50%;
         display: flex; justify-content: center; align-items: center; margin-right: 12px;
@@ -115,9 +139,15 @@ st.markdown("""
         min-width: 24px; height: 24px; border: 2px solid #444; border-radius: 50%;
         display: flex; justify-content: center; align-items: center; margin-right: 12px;
     }
+    
     @keyframes popIn {
         0% { transform: scale(0); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes spark {
+        0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+        100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
     }
     
     /* Remove padding na tela inicial */
@@ -499,11 +529,12 @@ if st.session_state.tipo_usuario == 'cliente' and st.session_state.step < 9:
         img_nexus_sidebar = get_base64_image("logos nexus_negativa tagline (2).png")
         img_voxia_sidebar = get_base64_image("VOXIA - Logo negativo branco.png")
         
+        # Alterado de flex-start para center
         st.markdown(f"""
-<div style="display: flex; justify-content: flex-start; align-items: center; gap: 16px; margin-bottom: 20px; margin-top: 5px; padding-bottom: 20px; border-bottom: 1px solid #2a2a3a;">
-    <img src="data:image/png;base64,{img_nexus_sidebar}" width="90">
-    <div style="width: 1px; height: 28px; background-color: #3a3a4a;"></div>
-    <img src="data:image/png;base64,{img_voxia_sidebar}" width="70">
+<div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 20px; margin-top: 5px; padding-bottom: 20px; border-bottom: 1px solid #2a2a3a;">
+<img src="data:image/png;base64,{img_nexus_sidebar}" width="90">
+<div style="width: 1px; height: 28px; background-color: #3a3a4a;"></div>
+<img src="data:image/png;base64,{img_voxia_sidebar}" width="70">
 </div>
 """, unsafe_allow_html=True)
             
