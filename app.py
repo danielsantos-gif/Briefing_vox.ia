@@ -911,8 +911,26 @@ elif st.session_state.step == 9:
         st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
         
         st.markdown("#### **Observações Finais**")
-        st.caption("Há algum detalhe, crise recente ou nuances que não foram abordados?")
-        st.session_state.dados['nuances'] = st.text_area("Mensagem adicional:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=100)
+        
+        # Bloco de destaque para a pergunta
+        st.markdown("""
+            <div style="background-color: #1a1a24; border-left: 4px solid #F58220; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+                <p style="margin: 0; color: #ffffff; font-weight: 500; font-size: 1.1rem;">
+                    Há algum detalhe, crise recente ou nuances que não foram abordados?
+                </p>
+                <p style="margin: 5px 0 0 0; color: #888; font-size: 0.9rem;">
+                    Contextos extras ajudam a IA a ser mais precisa e evitar alucinações.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.session_state.dados['nuances'] = st.text_area(
+            "Mensagem adicional:", 
+            value=st.session_state.dados['nuances'], 
+            placeholder="Ex: Tivemos uma reestruturação de marca há 2 meses / Foco em investidores...", 
+            label_visibility="collapsed", 
+            height=120
+        )
         
         st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
     
