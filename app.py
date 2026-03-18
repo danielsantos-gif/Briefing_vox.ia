@@ -967,37 +967,34 @@ elif st.session_state.step == 9:
 elif st.session_state.step == 10:
     url_destino = "https://nexus.fsb.com.br/"
 
-   # HTML e JavaScript com Meta Refresh de segurança
-    html_code = f"""
-    <head>
-        <meta http-equiv="refresh" content="5;url={url_destino}">
-    </head>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: sans-serif; background-color: #0a0a0f; color: white; height: 100vh; margin: 0;">
-        <svg style="width: 80px; height: 80px; overflow: visible;" viewBox="0 0 52 52">
-            <circle cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="3" />
-            <path fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-        </svg>
-        
-        <h1 style="font-size: 2.2rem; margin-top: 20px;">Briefing Enviado!</h1>
-        <p style="color: #ccc; font-size: 1.1rem; max-width: 400px; margin-bottom: 30px;">
-            Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
-        </p>
+    # HTML EM MODO "RAW" (SEM INDENTAÇÃO PARA NÃO VIRAR BLOCO DE CÓDIGO)
+    st.markdown(f"""
+<script>
+    setTimeout(function() {{
+        window.top.location.href = "{url_destino}";
+    }}, 5000);
+</script>
 
-        <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
-            <p style="color: #888; font-size: 0.8rem; margin-bottom: 12px;">Não foi redirecionado automaticamente?</p>
-            <a href="{url_destino}" target="_top" style="text-decoration: none;">
-                <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
-                    Clique aqui para voltar ao site
-                </button>
-            </a>
-        </div>
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 60vh; font-family: sans-serif;">
+    <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #4CAF50; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+        <span style="color: #4CAF50; font-size: 50px; font-weight: bold;">✓</span>
     </div>
+    
+    <h1 style="color: white; font-size: 2.5rem; margin: 10px 0;">Briefing Enviado!</h1>
+    <p style="color: #ccc; font-size: 1.2rem; max-width: 500px; margin-bottom: 30px;">
+        Seu diagnóstico foi registrado com sucesso.<br>
+        Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
+    </p>
 
-    <script>
-        // Plano A & B: JavaScript tentando quebrar o iframe do Streamlit
-        setTimeout(function() {{
-            window.top.location.href = "{url_destino}";
-            window.location.href = "{url_destino}";
-        }}, 4500);
-    </script>
-    """
+    <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
+        <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">Não foi redirecionado automaticamente?</p>
+        <a href="{url_destino}" target="_top" style="text-decoration: none;">
+            <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;">
+                Clique aqui para voltar ao site
+            </button>
+        </a>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+    
+    st.balloons()
