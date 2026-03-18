@@ -967,9 +967,12 @@ elif st.session_state.step == 9:
 elif st.session_state.step == 10:
     url_destino = "https://nexus.fsb.com.br/"
 
-    # HTML e JavaScript isolados em um componente real
+   # HTML e JavaScript com Meta Refresh de segurança
     html_code = f"""
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: sans-serif; background-color: #0a0a0f; color: white; height: 100vh;">
+    <head>
+        <meta http-equiv="refresh" content="5;url={url_destino}">
+    </head>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: sans-serif; background-color: #0a0a0f; color: white; height: 100vh; margin: 0;">
         <svg style="width: 80px; height: 80px; overflow: visible;" viewBox="0 0 52 52">
             <circle cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="3" />
             <path fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
@@ -991,13 +994,10 @@ elif st.session_state.step == 10:
     </div>
 
     <script>
+        // Plano A & B: JavaScript tentando quebrar o iframe do Streamlit
         setTimeout(function() {{
             window.top.location.href = "{url_destino}";
-        }}, 4000);
+            window.location.href = "{url_destino}";
+        }}, 4500);
     </script>
     """
-    
-    # Executa o componente HTML (ajustamos a altura para cobrir a tela)
-    components.html(html_code, height=600)
-    
-    st.balloons()
