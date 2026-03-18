@@ -964,36 +964,21 @@ elif st.session_state.step == 9:
             st.session_state.step = 10
             st.rerun()
 
-# --- PASSO 10: SUCESSO (REDIRECIONAMENTO DEFINITIVO) ---
+# --- PASSO 10: SUCESSO (VERSÃO À PROVA DE ERROS) ---
 elif st.session_state.step == 10:
     url_destino = "https://nexus.fsb.com.br/"
-
-    # Usamos o dedent para garantir que o Streamlit não veja espaços iniciais
-    html_sucesso = textwrap.dedent(f"""
-        <script>
-            setTimeout(function() {{
-                window.top.location.href = "{url_destino}";
-            }}, 5000);
-        </script>
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 60vh; font-family: sans-serif;">
-            <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #4CAF50; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-                <span style="color: #4CAF50; font-size: 50px; font-weight: bold;">✓</span>
-            </div>
-            <h1 style="color: white; font-size: 2.5rem; margin: 10px 0;">Briefing Enviado!</h1>
-            <p style="color: #ccc; font-size: 1.2rem; max-width: 500px; margin-bottom: 30px;">
-                Seu diagnóstico foi registrado com sucesso.<br>
-                Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
-            </p>
-            <div style="padding: 20px; background-color: #1a1a24; border-radius: 12px; border: 1px solid #333;">
-                <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">Não foi redirecionado automaticamente?</p>
-                <a href="{url_destino}" target="_top" style="text-decoration: none;">
-                    <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;">
-                        Clique aqui para voltar ao site
-                    </button>
-                </a>
-            </div>
-        </div>
-    """)
     
-    st.markdown(html_sucesso, unsafe_allow_html=True)
+    # Criamos o HTML em uma linha só para o Streamlit não se confundir com espaços
+    html_final = f'<script>setTimeout(function(){{window.top.location.href="{url_destino}";}},5000);</script>'
+    html_final += '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:60vh;font-family:sans-serif;">'
+    html_final += '<div style="width:80px;height:80px;border-radius:50%;border:4px solid #4CAF50;display:flex;justify-content:center;align-items:center;margin-bottom:20px;">'
+    html_final += '<span style="color:#4CAF50;font-size:50px;font-weight:bold;">✓</span></div>'
+    html_final += '<h1 style="color:white;font-size:2.5rem;margin:10px 0;">Briefing Enviado!</h1>'
+    html_final += '<p style="color:#ccc;font-size:1.2rem;max-width:500px;margin-bottom:30px;">Seu diagnóstico foi registrado com sucesso.<br>Em instantes você será levado de volta ao portal <strong>Nexus</strong>.</p>'
+    html_final += '<div style="padding:20px;background-color:#1a1a24;border-radius:12px;border:1px solid #333;">'
+    html_final += '<p style="color:#888;font-size:0.9rem;margin-bottom:15px;">Não foi redirecionado automaticamente?</p>'
+    html_final += f'<a href="{url_destino}" target="_top" style="text-decoration:none;">'
+    html_final += '<button style="background-color:#F58220;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:bold;font-size:1rem;">Clique aqui para voltar ao site</button></a></div></div>'
+
+    st.markdown(html_final, unsafe_allow_html=True)
     st.balloons()
