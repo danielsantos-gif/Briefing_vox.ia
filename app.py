@@ -892,14 +892,24 @@ elif st.session_state.step == 8:
 
 # --- PASSO 9: SUCESSO (CHECKMARK ANIMADO) ---
 elif st.session_state.step == 9:
+    # Injeta o redirecionamento automático após 5 segundos (5000ms)
     st.markdown("""
+        <script>
+            setTimeout(function() {
+                window.location.href = "https://nexus.fsb.com.br/";
+            }, 5000);
+        </script>
         <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column;">
-            <svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark_circle" cx="26" cy="26" r="25" fill="none"/>
+            <svg class="success-checkmark" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark_circle" cx="26" cy="26" r="24" fill="none"/>
                 <path class="checkmark_check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
             <h1 style="margin-top: 30px; font-size: 3rem;">Briefing Concluído!</h1>
-            <p style="color: #ccc; font-size: 1.2rem; text-align: center; margin-top: 15px;">Os dados foram enviados com segurança.<br>Nossa equipe iniciará o processamento e entrará em contato no e-mail informado.</p>
+            <p style="color: #ccc; font-size: 1.2rem; text-align: center; margin-top: 15px;">
+                Os dados foram enviados com segurança.<br>
+                Nossa equipe iniciará o processamento e entrará em contato.<br><br>
+                <span style="color: #F58220; font-weight: bold;">Redirecionando você para o nosso portal...</span>
+            </p>
         </div>
     """, unsafe_allow_html=True)
     st.balloons()
