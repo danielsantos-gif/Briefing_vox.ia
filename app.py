@@ -964,41 +964,35 @@ elif st.session_state.step == 9:
             st.session_state.step = 10
             st.rerun()
 
-# --- PASSO 10: SUCESSO (VERSÃO FINAL "À PROVA DE BALAS") ---
+# --- PASSO 10: SUCESSO (RETORNO AO LAYOUT ORIGINAL) ---
 elif st.session_state.step == 10:
     st.balloons()
     
-    # Centralizando tudo com colunas nativas do Streamlit
-    col_central, col_aux = st.columns([1, 8]) # Empurra um pouco para o lado se precisar
+    # Espaçamento para centralizar verticalmente
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
     
+    # Container centralizado
     with st.container():
-        # Ícone de Sucesso Nativo
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.success("### Briefing Concluído com Sucesso!")
-        
-        st.title("Tudo pronto! 🚀")
-        
-        st.markdown(f"""
-            <div style="background-color: #1a1a24; padding: 30px; border-radius: 15px; border: 1px solid #2a2a3a; text-align: center;">
-                <h2 style="color: white; margin-bottom: 20px;">Obrigado por confiar na Vox.ia</h2>
-                <p style="color: #ccc; font-size: 1.2rem;">
-                    Seu diagnóstico foi registrado em nossa base de dados.<br>
-                    Nossa equipe iniciará o processamento imediatamente.
-                </p>
-                <p style="color: #F58220; font-weight: bold; margin-top: 20px;">
-                    Clique no botão abaixo para retornar ao portal Nexus:
+        # Ícone e Título
+        st.markdown("""
+            <div style="text-align: center;">
+                <h1 style="font-size: 3.5rem; color: #4CAF50; margin-bottom: 0;">✓</h1>
+                <h1 style="font-size: 2.8rem; margin-top: 10px;">Briefing Concluído!</h1>
+                <p style="font-size: 1.2rem; color: #ccc; margin-bottom: 30px;">
+                    Seu diagnóstico foi enviado com sucesso para nossa base de dados.
                 </p>
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # O Pulo do Gato: Um link disfarçado de botão que o Streamlit aceita
+        # O Botão oficial de retorno (Limpo e funcional)
         st.link_button(
-            "✨ VOLTAR PARA O PORTAL NEXUS", 
+            "Finalizar e Voltar para o Portal Nexus", 
             "https://nexus.fsb.com.br/", 
             type="primary", 
             use_container_width=True
         )
         
-        st.caption("Ao clicar, você será levado para https://nexus.fsb.com.br/")
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.info("Nossa equipe entrará em contato através do e-mail fornecido nas próximas etapas do projeto.")
+
+    # Removemos qualquer script de redirecionamento automático que estava quebrando o layout
