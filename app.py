@@ -842,119 +842,74 @@ elif st.session_state.step == 7:
     if not pode_avancar:
         st.error(f"Aviso: Faltam {5 - u_prontos} perguntas de mercado para concluir o formulário.")
 
-# --- PASSO 8: REVISÃO E ENVIO ---
+# --- PASSO 8: REVISÃO TÉCNICA (FOCO EM DADOS) ---
 elif st.session_state.step == 8:
-    st.title("8. Revisão e Envio")
-    st.markdown("Estamos quase lá! Antes de enviar, certifique-se de que os dados fornecidos refletem a estratégia atual. Uma vez enviado e aprovado, nossa equipe iniciará o processamento dos diagnósticos.")
+    st.title("8. Revisão Técnica do Briefing")
+    st.warning("⚠️ Revise os dados abaixo com atenção. Eles serão usados para treinar os modelos de IA que analisarão sua marca.")
     
-    st.write(f"**Sujeito da Análise:** {st.session_state.dados['empresa']}")
-    st.write(f"**Prompts Registrados:** {len(st.session_state.lista_b)} Branded / {len(st.session_state.lista_u)} Mercado")
-    
-    st.divider()
-    st.markdown("### Contato e Considerações Finais")
-    st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados do produto:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
-    
-    st.markdown("<br><h4><strong>Há algum detalhe, crise recente ou nuances que não foram abordados nas perguntas anteriores e que você considera vital para nossa análise?</strong></h4>", unsafe_allow_html=True)
-    st.session_state.dados['nuances'] = st.text_area("Detalhes adicionais:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=150)
-    
-    st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
-    
-    pode_enviar = st.session_state.get('lgpd', False) and "@" in st.session_state.dados['email']
-    
-    st.divider()
-    col_v, col_a, _ = st.columns([2, 2, 6])
-    with col_v: st.button("← Voltar", on_click=prev_step, use_container_width=True)
-    
-    with col_a:
-        if st.button("FINALIZAR BRIEFING →", type="primary", disabled=not pode_enviar, use_container_width=True):
-            descricao_completa = f"E-mail Contato: {st.session_state.dados['email']}\nObjetivos: {', '.join(st.session_state.dados['objetivos'])}\n\nNarrativa Central: {st.session_state.dados['desc_pilar']}\n\nNuances/Adicional: {st.session_state.dados['nuances']}"
-            
-            prot = f"BX-{random.randint(1000, 9999)}"
-            supabase.table("briefings").insert({
-                "protocolo": prot,
-                "nome_sujeito": st.session_state.dados['empresa'],
-                "tipo_analise": st.session_state.dados['tipo_analise'],
-                "concorrentes": st.session_state.lista_conc,
-                "atributos_pos": st.session_state.lista_pos,
-                "atributos_neg": st.session_state.lista_neg,
-                "contexto_atributos": st.session_state.dados['justificativa'],
-                "prompts_branded": [{"Pergunta": p} for p in st.session_state.lista_b],
-                "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.lista_u],
-                "descricao": descricao_completa,
-                "status": "Novo"
-            }).execute()
-            
-            st.session_state.step = 9
-            st.rerun()
-            
-        if not pode_enviar:
-            st.caption("Preencha um e-mail válido e aceite a LGPD para finalizar.")
-
-# --- PASSO 8: REVISÃO GERAL DOS DADOS ---
-elif st.session_state.step == 8:
-    st.title("8. Revisão Geral")
-    st.markdown("Confira abaixo todas as informações preenchidas. Se algo estiver incorreto, você pode voltar às etapas anteriores para ajustar.")
-    
+    # --- CARD 1: IDENTIDADE ---
     with st.container(border=True):
-        st.subheader("📍 Identificação e Contexto")
+        st.markdown("### 📍 Identidade e Contexto")
         col_r1, col_r2 = st.columns(2)
-        col_r1.write(f"**Sujeito:** {st.session_state.dados['empresa']}")
-        col_r1.write(f"**Tipo:** {st.session_state.dados['tipo_analise']}")
-        col_r2.write(f"**Site:** {st.session_state.dados['site_url'] if st.session_state.dados['site_url'] else 'N/A'}")
+        with col_r1:
+            st.write(f"**Sujeito Principal:** {st.session_state.dados['empresa']}")
+            st.write(f"**Tipo de Análise:** {st.session_state.dados['tipo_analise']}")
+        with col_r2:
+            st.write(f"**Domínio Oficial:** {st.session_state.dados['site_url'] if st.session_state.dados['site_url'] else 'Não informado'}")
+            st.write(f"**Objetivos Selecionados:** {', '.join(st.session_state.dados['objetivos'])}")
         
-        st.divider()
-        st.subheader("🎯 Objetivos Estratégicos")
-        st.write(", ".join(st.session_state.dados['objetivos']))
-        
-        with st.expander("🔍 Ver Narrativa Central e Justificativa"):
-            st.write("**Narrativa:**")
+        with st.expander("📄 Ver Narrativa e Tese da Marca"):
             st.write(st.session_state.dados['desc_pilar'])
-            st.write("**Justificativa dos Atributos:**")
-            st.write(st.session_state.dados['justificativa'])
 
-        st.divider()
-        st.subheader("⚔️ Cenário Competitivo")
-        conc_validos = [x for x in st.session_state.lista_conc if x["nome"].strip()]
-        cols_c = st.columns(2)
-        for idx, c in enumerate(conc_validos):
-            cols_c[idx % 2].write(f"• {c['nome']} ({c['site']})")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        st.divider()
-        st.subheader("💎 Atributos de Marca")
-        col_pos, col_neg = st.columns(2)
-        with col_pos:
-            st.markdown("**Positivos:**")
-            for p in [x for x in st.session_state.lista_pos if x.strip()]: st.write(f"✅ {p}")
-        with col_neg:
-            st.markdown("**Negativos:**")
-            for n in [x for x in st.session_state.lista_neg if x.strip()]: st.write(f"❌ {n}")
+    # --- CARD 2: MERCADO E ATRIBUTOS ---
+    with st.container(border=True):
+        st.markdown("### ⚔️ Ecossistema de Mercado")
+        col_conc, col_atri = st.columns(2)
+        
+        with col_conc:
+            st.markdown("**Concorrentes e Benchmarks:**")
+            conc_ativos = [x for x in st.session_state.lista_conc if x['nome'].strip()]
+            for c in conc_ativos:
+                st.write(f"• {c['nome']} <span style='color:#666; font-size:12px;'>({c['site']})</span>", unsafe_allow_html=True)
+        
+        with col_atri:
+            st.markdown("**Atributos de Auditoria:**")
+            st.write("**✅ Projetar:** " + ", ".join([x for x in st.session_state.lista_pos if x.strip()]))
+            st.write("**❌ Mitigar:** " + ", ".join([x for x in st.session_state.lista_neg if x.strip()]))
 
-        st.divider()
-        st.subheader("🤖 Inteligência de Busca (Prompts)")
-        tab_pb, tab_pu = st.tabs(["Perguntas Institucionais (Branded)", "Perguntas de Mercado (Unbranded)"])
-        with tab_pb:
-            for p in st.session_state.lista_b: st.write(f"• {p}")
-        with tab_pu:
-            for p in st.session_state.lista_u: st.write(f"• {p}")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- CARD 3: PROMPTS ---
+    with st.container(border=True):
+        st.markdown("### 🤖 Bateria de Testes (Prompts)")
+        st.write(f"Um total de **{len(st.session_state.lista_b) + len(st.session_state.lista_u)} perguntas** serão processadas.")
+        
+        tab_rev_b, tab_rev_u = st.tabs(["Perguntas Branded", "Perguntas Unbranded"])
+        with tab_rev_b:
+            for p in st.session_state.lista_b: st.markdown(f"👉 <span style='font-size:14px;'>{p}</span>", unsafe_allow_html=True)
+        with tab_rev_u:
+            for p in st.session_state.lista_u: st.markdown(f"👉 <span style='font-size:14px;'>{p}</span>", unsafe_allow_html=True)
 
     st.divider()
     col_v, col_a, _ = st.columns([2, 2, 6])
-    with col_v: st.button("← Voltar para Ajustar", on_click=prev_step, use_container_width=True)
-    with col_a: st.button("Tudo Certo! Avançar →", on_click=next_step, type="primary", use_container_width=True)
+    with col_v: st.button("← Voltar e Ajustar", on_click=prev_step, use_container_width=True)
+    with col_a: st.button("Dados conferidos →", on_click=next_step, type="primary", use_container_width=True)
 
-# --- PASSO 9: CONSIDERAÇÕES FINAIS E ENVIO (Antigo Passo 8) ---
+# --- PASSO 9: CONSIDERAÇÕES FINAIS E ENVIO ---
 elif st.session_state.step == 9:
     st.title("9. Finalização e Envio")
-    st.markdown("Para concluir, informe seu contato e clique no botão abaixo para processar seu diagnóstico.")
+    st.markdown("Tudo pronto! Para concluir, informe o e-mail de recebimento e clique no botão de finalização.")
     
-    st.divider()
-    st.markdown("### Contato e Considerações Finais")
-    st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
-    
-    st.markdown("<br><h4><strong>Há algum detalhe, crise recente ou nuances que você considera vital para nossa análise?</strong></h4>", unsafe_allow_html=True)
-    st.session_state.dados['nuances'] = st.text_area("Detalhes adicionais:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=150)
-    
-    st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
+    with st.container(border=True):
+        st.session_state.dados['email'] = st.text_input("E-mail para contato sobre os resultados:*", value=st.session_state.dados['email'], placeholder="seuemail@empresa.com.br")
+        
+        st.markdown("#### **Observações Finais**")
+        st.caption("Há algum detalhe, crise recente ou nuances que não foram abordados?")
+        st.session_state.dados['nuances'] = st.text_area("Mensagem adicional:", value=st.session_state.dados['nuances'], placeholder="Destaque aqui...", label_visibility="collapsed", height=100)
+        
+        st.checkbox("Aceito os termos de tratamento de dados sensíveis (LGPD).", key="lgpd")
     
     pode_enviar = st.session_state.get('lgpd', False) and "@" in st.session_state.dados['email']
     
@@ -981,38 +936,11 @@ elif st.session_state.step == 9:
                 "status": "Novo"
             }).execute()
             
-            st.session_state.step = 10 # Pula para a tela de sucesso final
+            st.session_state.step = 10
             st.rerun()
-            
-        if not pode_enviar:
-            st.caption("Preencha um e-mail válido e aceite a LGPD para finalizar.")
 
-# --- PASSO 10: SUCESSO (Redirecionamento Automático) ---
+# --- PASSO 10: SUCESSO (REDIRECIONAMENTO AUTOMÁTICO) ---
 elif st.session_state.step == 10:
-    st.markdown("""
-        <script>
-            setTimeout(function() {
-                window.location.href = "https://nexus.fsb.com.br/";
-            }, 5000);
-        </script>
-        <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column;">
-            <svg class="success-checkmark" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark_circle" cx="26" cy="26" r="24" fill="none"/>
-                <path class="checkmark_check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
-            <h1 style="margin-top: 30px; font-size: 3rem;">Briefing Concluído!</h1>
-            <p style="color: #ccc; font-size: 1.2rem; text-align: center; margin-top: 15px;">
-                Os dados foram enviados com segurança.<br>
-                Nossa equipe iniciará o processamento e entrará em contato.<br><br>
-                <span style="color: #F58220; font-weight: bold;">Redirecionando você para o nosso portal...</span>
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    st.balloons()
-
-# --- PASSO 9: SUCESSO (CHECKMARK ANIMADO) ---
-elif st.session_state.step == 9:
-    # Injeta o redirecionamento automático após 5 segundos (5000ms)
     st.markdown("""
         <script>
             setTimeout(function() {
