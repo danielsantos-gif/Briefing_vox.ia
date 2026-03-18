@@ -962,25 +962,46 @@ elif st.session_state.step == 9:
             st.session_state.step = 10
             st.rerun()
 
-# --- PASSO 10: SUCESSO (REDIRECIONAMENTO AUTOMÁTICO) ---
+# --- PASSO 10: SUCESSO (REDIRECIONAMENTO ROBUSTO) ---
 elif st.session_state.step == 10:
-    st.markdown("""
+    # URL de destino
+    url_destino = "https://nexus.fsb.com.br/"
+
+    # HTML/JS para redirecionamento automático
+    st.markdown(f"""
         <script>
-            setTimeout(function() {
-                window.location.href = "https://nexus.fsb.com.br/";
-            }, 5000);
+            // Função para redirecionar
+            function redirect() {{
+                window.top.location.href = "{url_destino}";
+            }}
+            // Tenta redirecionar após 5 segundos
+            setTimeout(redirect, 5000);
         </script>
-        <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column;">
-            <svg class="success-checkmark" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark_circle" cx="26" cy="26" r="24" fill="none"/>
-                <path class="checkmark_check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        
+        <div style="display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column; text-align:center;">
+            <svg class="success-checkmark" style="overflow: visible; width: 80px; height: 80px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark_circle" cx="26" cy="26" r="24" fill="none" stroke="#4CAF50" stroke-width="2"/>
+                <path class="checkmark_check" fill="none" stroke="#4CAF50" stroke-width="2" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
-            <h1 style="margin-top: 30px; font-size: 3rem;">Briefing Concluído!</h1>
-            <p style="color: #ccc; font-size: 1.2rem; text-align: center; margin-top: 15px;">
-                Os dados foram enviados com segurança.<br>
-                Nossa equipe iniciará o processamento e entrará em contato.<br><br>
-                <span style="color: #F58220; font-weight: bold;">Redirecionando você para o nosso portal...</span>
+            
+            <h1 style="margin-top: 30px; font-size: 2.5rem; color: #fff;">Briefing Enviado!</h1>
+            <p style="color: #ccc; font-size: 1.1rem; max-width: 500px;">
+                Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
             </p>
+            
+            <div style="margin-top: 20px; padding: 10px; background: #1a1a24; border-radius: 8px; border: 1px solid #333;">
+                <p style="color: #888; font-size: 0.9rem; margin-bottom: 10px;">Não foi redirecionado automaticamente?</p>
+                <a href="{url_destino}" target="_self" style="text-decoration: none;">
+                    <button style="background-color: #F58220; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        Clique aqui para acessar o site
+                    </button>
+                </a>
+            </div>
         </div>
     """, unsafe_allow_html=True)
+    
     st.balloons()
+    
+    # Botão nativo do Streamlit como garantia extra (fica visível abaixo do HTML)
+    if st.button("Voltar para o site agora"):
+        st.markdown(f'<meta http-equiv="refresh" content="0;URL=\'{url_destino}\'">', unsafe_allow_html=True)
