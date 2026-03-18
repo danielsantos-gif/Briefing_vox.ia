@@ -964,33 +964,41 @@ elif st.session_state.step == 9:
             st.session_state.step = 10
             st.rerun()
 
-# --- PASSO 10: SUCESSO (A SOLUÇÃO FINAL) ---
+# --- PASSO 10: SUCESSO (VERSÃO FINAL "À PROVA DE BALAS") ---
 elif st.session_state.step == 10:
-    url_destino = "https://nexus.fsb.com.br/"
-    
-    # Criamos o HTML puro em uma string
-    html_content = f"""
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-family: sans-serif; height: 100vh; background-color: #0e1117; color: white; margin: 0;">
-        <div style="width: 80px; height: 80px; border-radius: 50%; border: 4px solid #4CAF50; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <span style="color: #4CAF50; font-size: 50px; font-weight: bold;">✓</span>
-        </div>
-        <h1 style="font-size: 2rem; margin: 10px 0;">Briefing Enviado!</h1>
-        <p style="color: #ccc; font-size: 1.1rem; max-width: 400px; margin-bottom: 30px;">
-            Seu diagnóstico foi registrado. Em instantes você será levado de volta ao portal <strong>Nexus</strong>.
-        </p>
-        <a href="{url_destino}" target="_top" style="text-decoration: none;">
-            <button style="background-color: #F58220; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem;">
-                Voltar agora
-            </button>
-        </a>
-    </div>
-    <script>
-        setTimeout(function() {{
-            window.top.location.href = "{url_destino}";
-        }}, 4000);
-    </script>
-    """
-
-    # Aqui está o segredo: renderizamos como um componente isolado
-    components.html(html_content, height=500)
     st.balloons()
+    
+    # Centralizando tudo com colunas nativas do Streamlit
+    col_central, col_aux = st.columns([1, 8]) # Empurra um pouco para o lado se precisar
+    
+    with st.container():
+        # Ícone de Sucesso Nativo
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.success("### Briefing Concluído com Sucesso!")
+        
+        st.title("Tudo pronto! 🚀")
+        
+        st.markdown(f"""
+            <div style="background-color: #1a1a24; padding: 30px; border-radius: 15px; border: 1px solid #2a2a3a; text-align: center;">
+                <h2 style="color: white; margin-bottom: 20px;">Obrigado por confiar na Vox.ia</h2>
+                <p style="color: #ccc; font-size: 1.2rem;">
+                    Seu diagnóstico foi registrado em nossa base de dados.<br>
+                    Nossa equipe iniciará o processamento imediatamente.
+                </p>
+                <p style="color: #F58220; font-weight: bold; margin-top: 20px;">
+                    Clique no botão abaixo para retornar ao portal Nexus:
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # O Pulo do Gato: Um link disfarçado de botão que o Streamlit aceita
+        st.link_button(
+            "✨ VOLTAR PARA O PORTAL NEXUS", 
+            "https://nexus.fsb.com.br/", 
+            type="primary", 
+            use_container_width=True
+        )
+        
+        st.caption("Ao clicar, você será levado para https://nexus.fsb.com.br/")
