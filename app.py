@@ -886,7 +886,8 @@ elif st.session_state.step == 8:
         st.markdown("### 🤖 Bateria de Testes (Prompts)")
         st.write(f"Um total de **{len(st.session_state.lista_b) + len(st.session_state.lista_u)} perguntas** serão processadas.")
         
-        tab_rev_b, tab_rev_u = st.tabs(["Perguntas Branded", "Perguntas Unbranded"])
+        # Nomenclatura atualizada para Non Branded
+        tab_rev_b, tab_rev_u = st.tabs(["Perguntas Branded", "Perguntas Non Branded"])
         with tab_rev_b:
             for p in st.session_state.lista_b: st.markdown(f"👉 <span style='font-size:14px;'>{p}</span>", unsafe_allow_html=True)
         with tab_rev_u:
@@ -931,7 +932,7 @@ elif st.session_state.step == 9:
                 "atributos_neg": st.session_state.lista_neg,
                 "contexto_atributos": st.session_state.dados['justificativa'],
                 "prompts_branded": [{"Pergunta": p} for p in st.session_state.lista_b],
-                "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.lista_u],
+                "prompts_unbranded": [{"Pergunta": p} for p in st.session_state.lista_u], # Mantido nome da coluna no banco, mas rótulo na UI é Non Branded
                 "descricao": descricao_completa,
                 "status": "Novo"
             }).execute()
